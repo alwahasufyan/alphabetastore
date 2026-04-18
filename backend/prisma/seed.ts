@@ -16,18 +16,17 @@ async function main() {
     throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set before running the seed.');
   }
 
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail },
-  });
-
-  if (existingAdmin) {
-    return;
-  }
-
   const passwordHash = await bcrypt.hash(adminPassword, bcryptSaltRounds);
 
-  await prisma.user.create({
-    data: {
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      name: adminName,
+      passwordHash,
+      role: Role.ADMIN,
+      status: UserStatus.ACTIVE,
+    },
+    create: {
       name: adminName,
       email: adminEmail,
       passwordHash,

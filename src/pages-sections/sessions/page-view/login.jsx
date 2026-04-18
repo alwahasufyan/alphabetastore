@@ -11,7 +11,7 @@ import * as yup from "yup";
 // GLOBAL CUSTOM COMPONENTS
 import { TextField, FormProvider } from "components/form-hook";
 import { useAuth } from "contexts/AuthContext";
-import { clearStoredCart, emitCartReset } from "utils/cart";
+import { clearCartSession, emitCartReset } from "utils/cart";
 import { apiPost } from "utils/api";
 import { saveTokens } from "utils/auth";
 
@@ -58,7 +58,7 @@ export default function LoginPageView() {
       const response = await apiPost("/auth/login", values);
 
       saveTokens(response.accessToken, response.refreshToken);
-      clearStoredCart();
+      clearCartSession();
       emitCartReset();
 
       const currentUser = await loadCurrentUser();

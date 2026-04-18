@@ -2,9 +2,7 @@
 
 import Card from "@mui/material/Card";
 import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 // LOCAL CUSTOM COMPONENT
@@ -19,16 +17,22 @@ export default function CheckoutSummary() {
   const {
     state
   } = useCart();
+
   const total = state.cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+
   return <Card elevation={0} sx={theme => ({
     p: 3,
     backgroundColor: theme.palette.grey[50],
     border: `1px solid ${theme.palette.divider}`
   })}>
+      <Typography variant="h5" sx={{
+      mb: 2
+    }}>
+        Order Summary
+      </Typography>
+
       <ListItem title="Subtotal" value={total} />
-      <ListItem title="Shipping" />
-      <ListItem title="Tax" value={0} />
-      <ListItem title="Discount" />
+      <ListItem title="Delivery" value={0} />
 
       <Divider sx={{
       my: 2
@@ -36,12 +40,14 @@ export default function CheckoutSummary() {
 
       <Typography variant="h2">{currency(total)}</Typography>
 
-      <Stack direction="row" spacing={2} mt={3}>
-        <TextField size="medium" placeholder="Voucher" variant="outlined" fullWidth />
+      <Stack spacing={1} mt={3}>
+        <Typography variant="body2" color="text.secondary">
+          Payment method: Cash on delivery.
+        </Typography>
 
-        <Button size="large" variant="outlined" color="primary">
-          Apply
-        </Button>
+        <Typography variant="body2" color="text.secondary">
+          Your cart will be converted into an order immediately after submission.
+        </Typography>
       </Stack>
     </Card>;
 }

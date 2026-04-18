@@ -1,12 +1,14 @@
 "use client";
 
-import { createContext, useEffect, useMemo, useReducer, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+
+import { useAuth } from "contexts/AuthContext";
+import { apiDelete, apiGet, apiPatch, apiPost } from "utils/api";
 
 import {
   CART_RESET_EVENT,
-  clearStoredCart,
-  getStoredCart,
-  saveStoredCart
+  clearCartSession,
+  ensureCartSessionId
 } from "utils/cart";
 
 
@@ -15,7 +17,8 @@ import {
 
 // =================================================================================
 const INITIAL_STATE = {
-  cart: []
+  cart: [],
+  total: 0
 };
 
 
@@ -25,73 +28,152 @@ const INITIAL_STATE = {
 // ==============================================================
 
 export const CartContext = createContext({});
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "CHANGE_CART_AMOUNT":
-      const cartList = state.cart;
-      const cartItem = action.payload;
-      if (cartItem === undefined) return state;
-      const existIndex = cartList.findIndex(item => item.id === cartItem.id);
 
-      
-// REMOVE ITEM IF QUANTITY IS LESS THAN 1
-      if (cartItem.qty < 1) {
-        const updatedCart = cartList.filter(item => item.id !== cartItem.id);
-        return {
-          ...state,
-          cart: updatedCart
-        };
-      }
+function normalizeCart(apiCart) {
+  const items = Array.isArray(apiCart?.items) ? apiCart.items.map(item => ({
+    id: item.id,
+    productId: item.productId,
+    slug: item.product?.slug || "",
+    title: item.product?.name || "Product",
+    thumbnail: item.product?.imageUrl || "/assets/images/products/placeholder.png",
+    price: Number(item.unitPrice || 0),
+    qty: item.quantity,
+    total: Number(item.total || 0)
+  })) : [];
 
-      
-// IF PRODUCT ALREADY EXITS IN CART
-      if (existIndex > -1) {
-        const updatedCart = [...cartList];
-        updatedCart[existIndex].qty = cartItem.qty;
-        return {
-          ...state,
-          cart: updatedCart
-        };
-      }
-      return {
-        ...state,
-        cart: [...cartList, cartItem]
-      };
-    case "HYDRATE_CART":
-      return {
-        ...state,
-        cart: Array.isArray(action.payload) ? action.payload : []
-      };
-    case "CLEAR_CART":
-      return {
-        ...state,
-        cart: []
-      };
-    default:
-      {
-        return state;
-      }
-  }
-};
+  return {
+    cart: items,
+    total: typeof apiCart?.total === "number" ? apiCart.total : items.reduce((sum, item) => sum + item.price * item.qty, 0)
+  };
+}
+
 export default function CartProvider({
   children
 }) {
-  const [hydrated, setHydrated] = useState(false);
-  const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const {
+    loading: authLoading,
+    isAuthenticated
+  } = useAuth();
+  const [state, setState] = useState(INITIAL_STATE);
+  const [ready, setReady] = useState(false);
+
+  const syncCart = useCallback(async () => {
+    if (!isAuthenticated) {
+      ensureCartSessionId();
+    }
+
+    const cart = await apiGet("/cart");
+    setState(normalizeCart(cart));
+    return cart;
+  }, [isAuthenticated]);
+
+  const addItem = useCallback(async (productId, quantity) => {
+    const cart = await apiPost("/cart/items", {
+      productId,
+      quantity
+    });
+
+    setState(normalizeCart(cart));
+    return cart;
+  }, []);
+
+  const updateItem = useCallback(async (itemId, quantity) => {
+    const cart = await apiPatch(`/cart/items/${itemId}`, {
+      quantity
+    });
+
+    setState(normalizeCart(cart));
+    return cart;
+  }, []);
+
+  const removeItem = useCallback(async itemId => {
+    const cart = await apiDelete(`/cart/items/${itemId}`);
+    setState(normalizeCart(cart));
+    return cart;
+  }, []);
+
+  const clearCart = useCallback(async () => {
+    const cart = await apiDelete("/cart/clear");
+    setState(normalizeCart(cart));
+    return cart;
+  }, []);
+
+  const dispatch = useCallback(async action => {
+    if (!action || typeof action !== "object") return;
+
+    switch (action.type) {
+      case "CHANGE_CART_AMOUNT": {
+        const cartItem = action.payload;
+        const nextQuantity = Number(cartItem?.qty ?? 0);
+
+        if (!cartItem || Number.isNaN(nextQuantity)) {
+          return;
+        }
+
+        if (cartItem.productId) {
+          if (nextQuantity < 1) {
+            await removeItem(cartItem.id);
+            return;
+          }
+
+          await updateItem(cartItem.id, nextQuantity);
+          return;
+        }
+
+        if (nextQuantity < 1) {
+          return;
+        }
+
+        await addItem(cartItem.id, nextQuantity);
+        return;
+      }
+
+      case "CLEAR_CART":
+        await clearCart();
+        return;
+
+      default:
+        return;
+    }
+  }, [addItem, clearCart, removeItem, updateItem]);
 
   useEffect(() => {
-    const storedCart = getStoredCart();
-    dispatch({
-      type: "HYDRATE_CART",
-      payload: storedCart
-    });
-    setHydrated(true);
+    if (authLoading) return;
 
-    const handleCartReset = () => {
-      clearStoredCart();
-      dispatch({
-        type: "CLEAR_CART"
-      });
+    let cancelled = false;
+
+    const loadCart = async () => {
+      try {
+        const cart = await syncCart();
+
+        if (!cancelled) {
+          setState(normalizeCart(cart));
+        }
+      } catch {
+        if (!cancelled) {
+          setState(INITIAL_STATE);
+        }
+      } finally {
+        if (!cancelled) {
+          setReady(true);
+        }
+      }
+    };
+
+    loadCart();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, syncCart]);
+
+  useEffect(() => {
+    const handleCartReset = event => {
+      if (event?.detail?.resetSession !== false) {
+        clearCartSession();
+      }
+
+      setState(INITIAL_STATE);
     };
 
     window.addEventListener(CART_RESET_EVENT, handleCartReset);
@@ -101,15 +183,11 @@ export default function CartProvider({
     };
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-
-    saveStoredCart(state.cart);
-  }, [hydrated, state.cart]);
-
   const contextValue = useMemo(() => ({
     state,
-    dispatch
-  }), [state, dispatch]);
+    dispatch,
+    ready,
+    refreshCart: syncCart
+  }), [dispatch, ready, state, syncCart]);
   return <CartContext value={contextValue}>{children}</CartContext>;
 }

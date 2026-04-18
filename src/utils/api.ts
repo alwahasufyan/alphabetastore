@@ -1,4 +1,5 @@
 import { getAccessToken } from "./auth";
+import { ensureCartSessionId } from "./cart";
 
 export const API_BASE_URL = "http://localhost:3001/api/v1";
 
@@ -33,9 +34,14 @@ export async function apiRequest(path: string, options: RequestOptions = {}) {
   const { method = "GET", body } = options;
   const token = getAccessToken();
   const headers: Record<string, string> = {};
+  const sessionId = ensureCartSessionId();
 
   if (method === "POST" || method === "PATCH") {
     headers["Content-Type"] = "application/json";
+  }
+
+  if (sessionId) {
+    headers["x-session-id"] = sessionId;
   }
 
   if (token) {

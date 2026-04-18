@@ -16,11 +16,13 @@ export default function ListItem({
   title,
   value
 }) {
+  const hasValue = typeof value === "number";
+
   return <FlexBetween mb={1}>
       <Typography variant="body1" color="text.secondary">
         {title}:
       </Typography>
 
-      <Typography variant="h6">{value ? currency(value) : "-"}</Typography>
+      <Typography variant="h6">{hasValue ? currency(value) : "-"}</Typography>
     </FlexBetween>;
 }

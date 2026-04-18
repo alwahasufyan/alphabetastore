@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 
-import { apiGet, apiPost } from "utils/api";
+import { apiDelete, apiGet, apiPost } from "utils/api";
 import { clearTokens, getRefreshToken, isLoggedIn } from "utils/auth";
-import { clearStoredCart, emitCartReset } from "utils/cart";
+import { clearCartSession, emitCartReset } from "utils/cart";
 
 const AuthContext = createContext(null);
 
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
         if (mounted) setUser(currentUser);
       } catch {
         clearTokens();
-        clearStoredCart();
+        clearCartSession();
         emitCartReset();
         if (mounted) setUser(null);
       } finally {
@@ -51,6 +51,10 @@ export function AuthProvider({ children }) {
     const refreshToken = getRefreshToken();
 
     try {
+      if (isLoggedIn()) {
+        await apiDelete("/cart/clear");
+      }
+
       if (refreshToken) {
         await apiPost("/auth/logout", { refreshToken });
       }
@@ -58,7 +62,7 @@ export function AuthProvider({ children }) {
       // Keep logout resilient even if the backend token is already invalid.
     } finally {
       clearTokens();
-      clearStoredCart();
+      clearCartSession();
       emitCartReset();
       setUser(null);
     }

@@ -22,6 +22,11 @@ enum ProductStatus {
   INACTIVE
 }
 
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+}
+
 model User {
   id            String         @id @default(uuid()) @db.Uuid
   name          String         @db.VarChar(120)
@@ -32,6 +37,7 @@ model User {
   status        UserStatus     @default(ACTIVE)
   createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   carts         Cart[]
+  orders        Order[]
   refreshTokens RefreshToken[]
 
   @@index([role])
@@ -81,6 +87,7 @@ model Product {
   status           ProductStatus  @default(ACTIVE)
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   cartItems        CartItem[]
+  orderItems       OrderItem[]
   category         Category       @relation(fields: [categoryId], references: [id])
   images           ProductImage[]
 
@@ -124,4 +131,40 @@ model CartItem {
   @@unique([cartId, productId])
   @@index([productId])
   @@map("cart_items")
+}
+
+model Order {
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String?      @map("user_id") @db.Uuid
+  sessionId   String?      @map("session_id") @db.VarChar(191)
+  fullName    String       @map("full_name") @db.VarChar(160)
+  phone       String       @db.VarChar(30)
+  city        String       @db.VarChar(120)
+  address     String       @db.VarChar(255)
+  notes       String?      @db.Text
+  totalAmount Decimal      @map("total_amount") @db.Decimal(10, 2)
+  status      OrderStatus  @default(PENDING)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items       OrderItem[]
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId    String   @map("order_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  quantity  Int
+  unitPrice Decimal  @map("unit_price") @db.Decimal(10, 2)
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
 }
