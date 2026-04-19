@@ -798,6 +798,108 @@ Do not build these in MVP:
 - Complex RBAC permissions matrix
 - Complex product attribute engine
 
+## 13. Progress Checklist (Updated: 2026-04-19)
+
+This checklist reflects the current workspace state.
+
+Legend:
+
+- [x] Done
+- [ ] Not done
+- [x] Partially done (with remaining points listed)
+
+### Phase 1: Project Setup + Auth
+
+- [x] NestJS backend project exists and runs with global config
+- [x] Prisma connected to PostgreSQL
+- [x] Environment validation and global validation/error handling
+- [x] User + refresh token tables created and migrated
+- [x] Admin seed account script exists (`backend/prisma/seed.ts`)
+- [x] Auth APIs implemented: register, login, refresh, logout, me
+- [x] JWT auth guard and role guard implemented
+- [ ] Frontend auth pages fully switched from mock flows to backend APIs
+- [ ] Frontend session handling fully aligned with backend JWT flow
+
+Phase status: [x] Backend complete, [ ] Frontend integration still pending.
+
+### Phase 2: Products + Categories
+
+- [x] Categories CRUD API (admin protected for write actions)
+- [x] Products CRUD API (admin protected for write actions)
+- [x] Product images table exists in schema
+- [ ] Product image upload endpoints/service not implemented yet
+- [ ] Product variants support not implemented yet
+- [ ] Product listing filters (category/search/status) not completed
+- [ ] Frontend product/category pages fully connected to backend
+- [ ] Admin frontend pages fully connected for products/categories
+
+Phase status: [x] Partially done.
+
+### Phase 3: Cart + Orders
+
+- [x] Cart and cart_items tables created
+- [x] Guest cart support via `x-session-id`
+- [x] Logged-in cart support
+- [x] Cart APIs implemented (get/add/update/remove/clear)
+- [ ] Addresses table not created yet
+- [x] Order + order_items tables created
+- [ ] order_status_history table not created yet
+- [x] Order creation endpoint exists
+- [ ] Customer order history endpoints/pages not completed
+- [ ] Admin order status update endpoint not completed
+
+Phase status: [x] Partially done.
+
+### Phase 4: Payments (COD + Bank Transfer)
+
+- [ ] payment_transactions table not created
+- [ ] bank_transfer_receipts table not created
+- [ ] Payment method selection flow not integrated
+- [ ] COD flow not implemented
+- [ ] Bank transfer + receipt upload not implemented
+- [ ] Admin payment review not implemented
+
+Phase status: [ ] Not started.
+
+### Phase 5: Support System (Tickets)
+
+- [ ] tickets table not created
+- [ ] ticket_messages table not created
+- [ ] Ticket APIs not implemented
+- [ ] Frontend customer/admin ticket pages not integrated with backend
+
+Phase status: [ ] Not started.
+
+### Phase 6: Services
+
+- [ ] services table not created
+- [ ] service_requests table not created
+- [ ] Services APIs not implemented
+- [ ] Frontend services and request pages not integrated with backend
+
+Phase status: [ ] Not started.
+
+### Phase 7: Optional Improvements
+
+- [ ] Deferred until MVP core phases are stable
+
+Phase status: [ ] Not started by design.
+
+## 14. Immediate Remaining Checklist (Execution Priority)
+
+Complete these items in order:
+
+1. [ ] Disable frontend mock adapter and introduce real backend baseURL configuration
+2. [ ] Finish frontend auth integration (login/register/me/refresh/logout)
+3. [ ] Complete product image upload APIs and frontend binding
+4. [ ] Add product filters in backend + frontend usage
+5. [ ] Add addresses + order status history + customer order history endpoints
+6. [ ] Add admin order status update endpoint and wire admin UI
+7. [ ] Implement payments module (tables + APIs + admin review)
+8. [ ] Implement tickets module (tables + APIs + frontend)
+9. [ ] Implement services module (tables + APIs + frontend)
+10. [ ] Remove legacy mock dependencies from `src/__server__` and related API wrappers
+
 If the business later needs them, add them after the core system is stable.
 
 ## 13. What To Build Later
