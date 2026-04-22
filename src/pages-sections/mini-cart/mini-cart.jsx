@@ -62,7 +62,7 @@ export default function MiniCart() {
       </Box>
 
       {CART_LENGTH > 0 && <Box p={2.5}>
-          <Button fullWidth color="primary" variant="contained" LinkComponent={Link} href="/checkout-alternative" sx={{
+          <Button fullWidth color="primary" variant="contained" LinkComponent={Link} href="/checkout" sx={{
         height: 44,
         mb: 1
       }}>

@@ -193,6 +193,7 @@ Notes:
 
 | Table | Purpose | Main columns |
 |---|---|---|
+| payment_methods | Configurable payment methods | id, code, name, is_active, created_at |
 | payment_transactions | Manual payment records | id, order_id, payment_method, amount, status, reference_number nullable, notes nullable, created_at |
 | bank_transfer_receipts | Uploaded proof for bank transfer | id, payment_transaction_id, file_url, uploaded_by, reviewed_by nullable, review_status, created_at |
 
@@ -200,6 +201,7 @@ Notes:
 
 - Cash on Delivery does not need provider integration
 - Bank transfer is manual review only in MVP
+- Keep the MVP limited to COD and BANK_TRANSFER only
 
 ### 6.5 Support
 
@@ -426,9 +428,8 @@ Base prefix: /api/v1
 ### 9.7 Payments
 
 - GET /payment-methods
-- POST /payments/orders/:orderId/cod
-- POST /payments/orders/:orderId/bank-transfer
-- POST /payments/orders/:orderId/bank-transfer/receipt
+- POST /payments/orders/:orderId
+- POST /payments/:id/receipt
 - GET /admin/payments
 - PATCH /admin/payments/:id/review
 
@@ -438,6 +439,7 @@ Base prefix: /api/v1
 - POST /tickets
 - GET /tickets/:id
 - POST /tickets/:id/messages
+- GET /admin/tickets
 - PATCH /admin/tickets/:id/status
 
 ### 9.9 Services
@@ -817,19 +819,19 @@ Legend:
 - [x] Admin seed account script exists (`backend/prisma/seed.ts`)
 - [x] Auth APIs implemented: register, login, refresh, logout, me
 - [x] JWT auth guard and role guard implemented
-- [ ] Frontend auth pages fully switched from mock flows to backend APIs
-- [ ] Frontend session handling fully aligned with backend JWT flow
+- [x] Frontend auth pages switched to backend APIs for register, login, logout, and current user loading
+- [x] Frontend session handling aligned with backend JWT flow, including automatic refresh and retry on expired access token
 
-Phase status: [x] Backend complete, [ ] Frontend integration still pending.
+Phase status: [x] Backend and frontend auth flow complete for the MVP scope.
 
 ### Phase 2: Products + Categories
 
 - [x] Categories CRUD API (admin protected for write actions)
 - [x] Products CRUD API (admin protected for write actions)
 - [x] Product images table exists in schema
-- [ ] Product image upload endpoints/service not implemented yet
+- [x] Product image upload endpoints/service implemented with local file upload and admin binding
 - [ ] Product variants support not implemented yet
-- [ ] Product listing filters (category/search/status) not completed
+- [x] Product listing filters (category/search/status) implemented in backend and wired into storefront/admin product screens
 - [ ] Frontend product/category pages fully connected to backend
 - [ ] Admin frontend pages fully connected for products/categories
 
@@ -841,34 +843,35 @@ Phase status: [x] Partially done.
 - [x] Guest cart support via `x-session-id`
 - [x] Logged-in cart support
 - [x] Cart APIs implemented (get/add/update/remove/clear)
-- [ ] Addresses table not created yet
+- [x] Addresses table and `/users/me/addresses` APIs implemented
 - [x] Order + order_items tables created
-- [ ] order_status_history table not created yet
+- [x] order_status_history table and serialization implemented
 - [x] Order creation endpoint exists
-- [ ] Customer order history endpoints/pages not completed
-- [ ] Admin order status update endpoint not completed
+- [x] Customer order history endpoints/pages completed with real API-backed dashboard pages
+- [x] Admin order list and order details pages connected to real API with status history display
+- [x] Admin order status update endpoint and UI wiring completed
 
-Phase status: [x] Partially done.
+Phase status: [x] Checkout, addresses, order history, and admin order status management are working end to end for the MVP scope.
 
 ### Phase 4: Payments (COD + Bank Transfer)
 
-- [ ] payment_transactions table not created
-- [ ] bank_transfer_receipts table not created
-- [ ] Payment method selection flow not integrated
-- [ ] COD flow not implemented
-- [ ] Bank transfer + receipt upload not implemented
-- [ ] Admin payment review not implemented
+- [x] payment_methods, payment_transactions, and bank_transfer_receipts tables created
+- [x] Default payment methods seeded (`COD`, `BANK_TRANSFER`)
+- [x] Payment method selection flow integrated into checkout
+- [x] COD flow implemented with automatic approval and order confirmation
+- [x] Bank transfer flow implemented with receipt upload
+- [x] Admin payment review list and approve/reject actions implemented
 
-Phase status: [ ] Not started.
+Phase status: [x] COD and bank transfer payment flow is implemented end to end for the MVP scope, including receipt upload and admin review.
 
 ### Phase 5: Support System (Tickets)
 
-- [ ] tickets table not created
-- [ ] ticket_messages table not created
-- [ ] Ticket APIs not implemented
-- [ ] Frontend customer/admin ticket pages not integrated with backend
+- [x] tickets and ticket_messages tables created
+- [x] Ticket APIs implemented for customer list/create/details/messages and admin list/status management
+- [x] Frontend customer ticket pages connected to backend with ticket creation and conversation flow
+- [x] Admin ticket list and ticket detail/reply/status pages connected to backend
 
-Phase status: [ ] Not started.
+Phase status: [x] Ticket workflow is implemented end to end for the MVP scope, including customer creation, threaded messages, admin replies, and admin status management.
 
 ### Phase 6: Services
 
@@ -889,14 +892,14 @@ Phase status: [ ] Not started by design.
 
 Complete these items in order:
 
-1. [ ] Disable frontend mock adapter and introduce real backend baseURL configuration
-2. [ ] Finish frontend auth integration (login/register/me/refresh/logout)
-3. [ ] Complete product image upload APIs and frontend binding
-4. [ ] Add product filters in backend + frontend usage
-5. [ ] Add addresses + order status history + customer order history endpoints
-6. [ ] Add admin order status update endpoint and wire admin UI
-7. [ ] Implement payments module (tables + APIs + admin review)
-8. [ ] Implement tickets module (tables + APIs + frontend)
+1. [x] Disable frontend mock adapter and introduce real backend baseURL configuration
+2. [x] Finish frontend auth session hardening (automatic refresh + retry on expired access token)
+3. [x] Complete product image upload APIs and frontend binding
+4. [x] Add product filters in backend + frontend usage
+5. [x] Add addresses + order status history
+6. [x] Add admin order status update endpoint and wire admin UI
+7. [x] Implement payments module (tables + APIs + admin review)
+8. [x] Implement tickets module (tables + APIs + frontend)
 9. [ ] Implement services module (tables + APIs + frontend)
 10. [ ] Remove legacy mock dependencies from `src/__server__` and related API wrappers
 

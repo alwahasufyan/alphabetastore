@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import debounce from "lodash/debounce";
 
 // MUI
@@ -20,21 +21,51 @@ import FlexBox from "components/flex-box/flex-box";
 export default function SearchArea({
   url = "/",
   buttonText = "Add Product",
-  searchPlaceholder = "Search Product..."
+  searchPlaceholder = "Search Product...",
+  extraContent = null
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const downSM = useMediaQuery(theme => theme.breakpoints.down("sm"));
-  const handleSearch = debounce(value => {
-    if (value) router.push(`?q=${value}`);else router.push(pathname);
-  }, 100);
-  return <FlexBox mb={2} gap={2} justifyContent="space-between" flexWrap="wrap">
-      <SearchInput placeholder={searchPlaceholder} onChange={e => handleSearch(e.target.value)} />
+  const [inputValue, setInputValue] = useState(searchParams.get("q") || "");
 
-      <Button href={url} color="info" fullWidth={downSM} variant="contained" startIcon={<Add />} LinkComponent={Link} sx={{
+  useEffect(() => {
+    setInputValue(searchParams.get("q") || "");
+  }, [searchParams]);
+
+  const handleSearch = useMemo(() => debounce(value => {
+    const params = new URLSearchParams(searchParams);
+    const nextValue = value.trim();
+
+    if (nextValue) {
+      params.set("q", nextValue);
+    } else {
+      params.delete("q");
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  }, 100), [pathname, router, searchParams]);
+
+  useEffect(() => () => {
+    handleSearch.cancel();
+  }, [handleSearch]);
+
+  return <FlexBox mb={2} gap={2} justifyContent="space-between" flexWrap="wrap">
+      <FlexBox gap={2} flex="1 1 0" flexWrap="wrap">
+        <SearchInput value={inputValue} placeholder={searchPlaceholder} onChange={e => {
+        const nextValue = e.target.value;
+        setInputValue(nextValue);
+        handleSearch(nextValue);
+      }} />
+        {extraContent}
+      </FlexBox>
+
+      {buttonText ? <Button href={url} color="info" fullWidth={downSM} variant="contained" startIcon={<Add />} LinkComponent={Link} sx={{
       minHeight: 44
     }}>
-        {buttonText}
-      </Button>
+          {buttonText}
+        </Button> : null}
     </FlexBox>;
 }

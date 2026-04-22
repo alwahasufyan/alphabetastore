@@ -4,11 +4,7 @@ import Image from "next/image";
 import Box from "@mui/material/Box";
 import Avatar from "@mui/material/Avatar";
 import TextField from "@mui/material/TextField";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-
-// MUI ICON COMPONENT
-import Delete from "@mui/icons-material/Delete";
 
 // GLOBAL CUSTOM COMPONENTS
 import { FlexBetween, FlexBox } from "components/flex-box";
@@ -28,10 +24,10 @@ export default function OrderedProduct({
   product
 }) {
   const {
-    product_img,
-    product_name,
-    product_price,
-    product_quantity
+    product: productDetails,
+    productName,
+    unitPrice,
+    quantity
   } = product || {};
   return <Box my={2} gap={2} display="grid" gridTemplateColumns={{
     md: "1fr 1fr",
@@ -42,25 +38,29 @@ export default function OrderedProduct({
         height: 64,
         width: 64
       }}>
-          <Image fill alt={product_name} src={product_img} sizes="(64px, 64px)" />
+          <Image fill alt={productName} src={productDetails?.imageUrl} sizes="(64px, 64px)" />
         </Avatar>
 
         <div>
           <Typography variant="h6" sx={{
           mb: 1
         }}>
-            {product_name}
+            {productName}
           </Typography>
 
           <FlexBox alignItems="center" gap={1}>
             <Typography variant="body1" sx={{
             color: "grey.600"
           }}>
-              {currency(product_price)} x
+              {currency(unitPrice)} x
             </Typography>
 
             <Box maxWidth={60}>
-              <TextField defaultValue={product_quantity} type="number" fullWidth />
+              <TextField value={quantity} type="number" fullWidth slotProps={{
+              input: {
+                readOnly: true
+              }
+            }} />
             </Box>
           </FlexBox>
         </div>
@@ -70,15 +70,8 @@ export default function OrderedProduct({
         <Typography variant="body1" sx={{
         color: "grey.600"
       }}>
-          Product properties: Black, L
+          Product slug: {productDetails?.slug || "N/A"}
         </Typography>
-
-        <IconButton>
-          <Delete sx={{
-          color: "grey.600",
-          fontSize: 22
-        }} />
-        </IconButton>
       </FlexBetween>
     </Box>;
 }

@@ -2,11 +2,13 @@ import Link from "next/link";
 
 // MUI
 import Grid from "@mui/material/Grid";
+import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 // LOCAL CUSTOM COMPONENTS
 import AddToCart from "./add-to-cart";
 import ProductGallery from "./product-gallery";
+import WishlistToggleButton from "components/wishlist/wishlist-toggle-button";
 
 // CUSTOM UTILS LIBRARY FUNCTION
 import { currency } from "lib";
@@ -70,7 +72,20 @@ export default function ProductIntro({
           </div>
 
           {/* ADD TO CART BUTTON */}
-          <AddToCart product={product} />
+          <Stack direction={{
+          sm: "row",
+          xs: "column"
+        }} spacing={2} alignItems={{
+          sm: "center",
+          xs: "stretch"
+        }}>
+            <AddToCart product={product} />
+            <WishlistToggleButton productId={product.id} variant="button" sx={{
+            mb: 4.5,
+            px: "1.75rem",
+            height: 40
+          }} />
+          </Stack>
         </Grid>
       </Grid>
     </StyledRoot>;

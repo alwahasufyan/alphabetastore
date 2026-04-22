@@ -23,7 +23,12 @@ import { currency } from "lib";
 // =================================================
 
 const getColor = status => {
-  if (status === "Pending") return "secondary";else if (status === "Processing") return "info";else if (status === "Delivered") return "success";else if (status === "Cancelled") return "error";else return "default";
+  if (status === "PENDING") return "secondary";
+  if (status === "CONFIRMED") return "info";
+  if (status === "PROCESSING") return "warning";
+  if (status === "DELIVERED") return "success";
+  if (status === "CANCELLED") return "error";
+  return "default";
 };
 export default function OrderRow({
   order
@@ -40,7 +45,7 @@ export default function OrderRow({
         sm: "center",
         xs: "right"
       }}>
-          <Chip size="small" label={order.status} color={getColor(order.status)} />
+          <Chip size="small" label={order.statusLabel} color={getColor(order.rawStatus)} />
         </Box>
 
         <Typography noWrap variant="body1" sx={{
@@ -58,7 +63,7 @@ export default function OrderRow({
           xs: "right"
         }
       }}>
-          {currency(order.totalPrice)}
+          {currency(order.totalAmount)}
         </Typography>
 
         <Box justifyContent="end" display={{

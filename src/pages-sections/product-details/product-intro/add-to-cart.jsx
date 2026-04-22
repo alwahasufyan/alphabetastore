@@ -30,10 +30,10 @@ export default function AddToCart({
   const {
     dispatch
   } = useCart();
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     setLoading(true);
-    setTimeout(() => {
-      dispatch({
+    try {
+      await dispatch({
         type: "CHANGE_CART_AMOUNT",
         payload: {
           id,
@@ -44,11 +44,13 @@ export default function AddToCart({
           qty: 1
         }
       });
+
       router.push("/mini-cart", {
         scroll: false
       });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   };
   return <Button color="primary" variant="contained" loading={isLoading} onClick={handleAddToCart} sx={{
     mb: 4.5,

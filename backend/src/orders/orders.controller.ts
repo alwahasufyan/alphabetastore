@@ -4,6 +4,7 @@ import {
   Get,
   Headers,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -16,6 +17,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrdersService } from './orders.service';
 
 type OrderRequest = {
@@ -49,10 +51,28 @@ export class OrdersController {
     return this.ordersService.findAll();
   }
 
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  findMine(@Req() request: OrderRequest) {
+    return this.ordersService.findMine(request.user!.sub);
+  }
+
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Req() request: OrderRequest, @Param('id') id: string) {
+    const user = request.user!;
+
+    return this.ordersService.findOneForUser(id, user.sub, user.role === Role.ADMIN);
+  }
+
+  @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(id);
+  updateStatus(
+    @Req() request: OrderRequest,
+    @Param('id') id: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+  ) {
+    return this.ordersService.updateStatus(id, request.user!.sub, updateOrderStatusDto);
   }
 }

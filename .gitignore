@@ -16,6 +16,7 @@ out/
 build/
 dist/
 backend/dist/
+backend/uploads/
 tools/output/
 
 # testing

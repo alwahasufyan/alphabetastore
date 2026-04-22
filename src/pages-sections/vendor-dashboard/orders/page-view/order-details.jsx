@@ -1,8 +1,11 @@
 "use client";
 
+import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
+import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import { useEffect, useState } from "react";
 
 // LOCAL CUSTOM COMPONENT
 import OrderActions from "../order-actions";
@@ -10,54 +13,84 @@ import TotalSummery from "../total-summery";
 import PageWrapper from "../../page-wrapper";
 import OrderedProduct from "../ordered-product";
 import ShippingAddress from "../shipping-address";
-
-// CUSTOM DATA MODEL
-
-
-// ==============================================================
-
-
-// ==============================================================
+import { fetchAdminOrderById } from "utils/orders";
+import OrderStatusHistoryCard from "components/orders/order-status-history-card";
 
 export default function OrderDetailsPageView({
-  order
+  orderId
 }) {
+  const [order, setOrder] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [pageError, setPageError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadOrder = async () => {
+      setPageError("");
+
+      try {
+        const nextOrder = await fetchAdminOrderById(orderId);
+        if (!cancelled) {
+          setOrder(nextOrder);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setPageError(error instanceof Error ? error.message : "Failed to load order details.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadOrder();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderId]);
+
   return <PageWrapper title="Order Details">
+      {pageError ? <Alert severity="error" sx={{
+      mb: 3
+    }}>{pageError}</Alert> : null}
+
+      {isLoading ? <Stack alignItems="center" justifyContent="center" py={6}>
+          <CircularProgress color="info" />
+        </Stack> : null}
+
+      {!isLoading && !pageError && order ? <>
       <Grid container spacing={3}>
         <Grid size={12}>
           <Card sx={{
           p: 3
         }}>
-            {/* ADD PRODUCT & CHANGE ORDER STATUS ACTION  */}
-            <OrderActions id={order.id} createdAt={order.createdAt} status={order.status} />
+            <OrderActions id={order.id} createdAt={order.createdAt} status={order.rawStatus} statusLabel={order.statusLabel} onUpdated={setOrder} />
 
-            {/* ORDERED PRODUCT LIST */}
             {order.items.map((item, index) => <OrderedProduct product={item} key={index} />)}
           </Card>
         </Grid>
 
-        {/* SHIPPING ADDRESS & CUSTOMER NOTES */}
         <Grid size={{
         md: 6,
         xs: 12
       }}>
-          <ShippingAddress address={order.shippingAddress} />
+          <ShippingAddress address={order.shippingAddress} notes={order.notes} phone={order.phone} fullName={order.fullName} />
         </Grid>
 
-        {/* TOTAL SUMMERY OF ORDER */}
         <Grid size={{
         md: 6,
         xs: 12
       }}>
-          <TotalSummery total={order.totalPrice} discount={order.discount} />
+          <TotalSummery order={order} />
         </Grid>
 
-        {/* CHANGE BUTTON */}
         <Grid size={12}>
-          <Button variant="contained" color="info">
-            Save Changes
-          </Button>
+          <OrderStatusHistoryCard history={order.statusHistory} />
         </Grid>
       </Grid>
+      </> : null}
     </PageWrapper>;
 }

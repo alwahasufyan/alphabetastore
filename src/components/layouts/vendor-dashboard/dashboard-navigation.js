@@ -37,6 +37,14 @@ export const navigation = [{
     path: "/admin/orders/f0ba538b-c8f3-45ce-b6c1-209cf07ba5f8"
   }]
 }, {
+  name: "Payments",
+  icon: duotone.Refund,
+  path: "/admin/payments"
+}, {
+  name: "Support Tickets",
+  icon: duotone.ElementHub,
+  path: "/admin/tickets"
+}, {
   name: "Customers",
   icon: duotone.Customers,
   path: "/admin/customers"
@@ -103,10 +111,6 @@ export const navigation = [{
   name: "Shop Setting",
   icon: duotone.SiteSetting,
   path: "/vendor/shop-settings"
-}, {
-  name: "Support Tickets",
-  icon: duotone.ElementHub,
-  path: "/vendor/support-tickets"
 }, {
   name: "Account Settings",
   icon: duotone.AccountSetting,

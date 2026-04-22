@@ -1,7 +1,4 @@
 import { OrdersPageView } from "pages-sections/customer-dashboard/orders/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/orders";
 export const metadata = {
   title: "Orders - Bazaar Next.js E-commerce Template",
   description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store",
@@ -21,12 +18,6 @@ export const metadata = {
 export default async function Orders({
   searchParams
 }) {
-  const {
-    page
-  } = await searchParams;
-  const data = await api.getOrders(+page || 1);
-  if (!data || data.orders.length === 0) {
-    return <div>Failed to load</div>;
-  }
-  return <OrdersPageView orders={data.orders} totalPages={data.totalPages} />;
+  const resolvedSearchParams = await searchParams;
+  return <OrdersPageView initialPage={Number(resolvedSearchParams?.page || 1)} />;
 }

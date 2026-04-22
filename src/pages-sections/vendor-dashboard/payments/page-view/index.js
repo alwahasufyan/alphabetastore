@@ -1,0 +1,1 @@
+export { default as PaymentsPageView } from "./payments";

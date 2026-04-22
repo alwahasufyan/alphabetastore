@@ -1,10 +1,7 @@
-import { notFound } from "next/navigation";
 import { TicketDetailsPageView } from "pages-sections/customer-dashboard/support-tickets/page-view";
 
-// API FUNCTIONS
-import api from "utils/__api__/ticket";
-
-// CUSTOM DATA MODEL
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateMetadata({
   params
@@ -12,9 +9,8 @@ export async function generateMetadata({
   const {
     slug
   } = await params;
-  const ticket = await api.getTicket(slug);
   return {
-    title: ticket.title + " - Bazaar Next.js E-commerce Template",
+    title: `Support Ticket ${slug} - Bazaar Next.js E-commerce Template`,
     description: "Bazaar is a React Next.js E-commerce template.",
     authors: [{
       name: "UI-LIB",
@@ -29,7 +25,5 @@ export default async function SupportTicketDetails({
   const {
     slug
   } = await params;
-  const ticket = await api.getTicket(slug);
-  if (!ticket) notFound();
-  return <TicketDetailsPageView ticket={ticket} />;
+  return <TicketDetailsPageView ticketId={slug} />;
 }

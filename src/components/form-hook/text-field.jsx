@@ -13,15 +13,18 @@ export default function TextField({
   type,
   ...other
 }) {
-  const {
-    control
-  } = useFormContext();
-  return <Controller name={name} control={control} render={({
+  const form = useFormContext();
+
+  if (!name || !form?.control) {
+    return <MuiTextField type={type} helperText={helperText} {...other} />;
+  }
+
+  return <Controller name={name} control={form.control} render={({
     field,
     fieldState: {
       error
     }
-  }) => <MuiTextField {...field} type={type} value={field.value} onChange={field.onChange}
+  }) => <MuiTextField {...field} type={type} value={field.value ?? ""} onChange={field.onChange}
   
 //   value={type === "number" && field.value === 0 ? "" : field.value}
   

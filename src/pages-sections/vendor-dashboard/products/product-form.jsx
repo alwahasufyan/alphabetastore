@@ -7,22 +7,27 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 // MUI
+import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Delete from "@mui/icons-material/Delete";
 
+import DropZone from "components/DropZone";
 import { FormProvider, TextField } from "components/form-hook";
 import {
   ACTIVE_STATUS,
   INACTIVE_STATUS,
   createAdminProduct,
+  deleteAdminProductImage,
   fetchAdminCategories,
   fetchAdminProductBySlug,
-  parseImageUrls,
-  serializeImageUrls,
+  uploadAdminProductImages,
   updateAdminProduct
 } from "utils/admin-catalog";
 
@@ -36,8 +41,7 @@ const validationSchema = yup.object({
   description: yup.string().trim().required("Description is required"),
   stockQty: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError("Stock quantity must be a number").integer("Stock quantity must be an integer").min(0, "Stock quantity cannot be negative").required("Stock quantity is required"),
   price: yup.number().transform((value, originalValue) => originalValue === "" ? NaN : value).typeError("Price must be a number").min(0, "Price cannot be negative").required("Price is required"),
-  status: yup.string().oneOf([ACTIVE_STATUS, INACTIVE_STATUS]).required("Status is required"),
-  imageUrlsText: yup.string().optional()
+  status: yup.string().oneOf([ACTIVE_STATUS, INACTIVE_STATUS]).required("Status is required")
 });
 
 
@@ -55,6 +59,9 @@ export default function ProductForm(props) {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pageError, setPageError] = useState("");
+  const [existingImages, setExistingImages] = useState([]);
+  const [removedImageIds, setRemovedImageIds] = useState([]);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const initialValues = {
     name: "",
     slug: "",
@@ -63,8 +70,7 @@ export default function ProductForm(props) {
     description: "",
     stockQty: "",
     price: "",
-    status: ACTIVE_STATUS,
-    imageUrlsText: ""
+    status: ACTIVE_STATUS
   };
   const methods = useForm({
     defaultValues: initialValues,
@@ -78,6 +84,15 @@ export default function ProductForm(props) {
     }
   } = methods;
   const categoryOptions = useMemo(() => [...categories].sort((left, right) => left.name.localeCompare(right.name)), [categories]);
+  const pendingImagePreviews = useMemo(() => pendingFiles.map(file => ({
+    file,
+    key: `${file.name}-${file.size}-${file.lastModified}`,
+    previewUrl: URL.createObjectURL(file)
+  })), [pendingFiles]);
+
+  useEffect(() => () => {
+    pendingImagePreviews.forEach(item => URL.revokeObjectURL(item.previewUrl));
+  }, [pendingImagePreviews]);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,6 +108,9 @@ export default function ProductForm(props) {
 
         setCategories(Array.isArray(categoryData) ? categoryData : []);
         setProduct(productData);
+        setExistingImages(Array.isArray(productData?.images) ? productData.images : []);
+        setRemovedImageIds([]);
+        setPendingFiles([]);
 
         if (productData) {
           reset({
@@ -103,8 +121,7 @@ export default function ProductForm(props) {
             description: productData.description || "",
             stockQty: String(productData.stockQty ?? ""),
             price: String(productData.price ?? ""),
-            status: productData.status || ACTIVE_STATUS,
-            imageUrlsText: serializeImageUrls(productData.images)
+            status: productData.status || ACTIVE_STATUS
           });
         } else {
           reset(initialValues);
@@ -124,11 +141,35 @@ export default function ProductForm(props) {
     return () => {
       isMounted = false;
     };
-  }, [initialValues.categoryId, initialValues.description, initialValues.imageUrlsText, initialValues.name, initialValues.price, initialValues.shortDescription, initialValues.slug, initialValues.status, initialValues.stockQty, reset, slug]);
+  }, [reset, slug]);
+
+  const handleDropFiles = acceptedFiles => {
+    setPendingFiles(current => {
+      const nextFiles = [...current];
+
+      acceptedFiles.forEach(file => {
+        const alreadyExists = nextFiles.some(existing => existing.name === file.name && existing.size === file.size && existing.lastModified === file.lastModified);
+
+        if (!alreadyExists) {
+          nextFiles.push(file);
+        }
+      });
+
+      return nextFiles;
+    });
+  };
+
+  const handleRemoveExistingImage = imageId => {
+    setExistingImages(current => current.filter(image => image.id !== imageId));
+    setRemovedImageIds(current => current.includes(imageId) ? current : [...current, imageId]);
+  };
+
+  const handleRemovePendingFile = key => {
+    setPendingFiles(current => current.filter(file => `${file.name}-${file.size}-${file.lastModified}` !== key));
+  };
 
 // FORM SUBMIT HANDLER
   const handleSubmitForm = handleSubmit(async values => {
-    const imageUrls = parseImageUrls(values.imageUrlsText);
     const payload = {
       categoryId: values.categoryId,
       name: values.name.trim(),
@@ -139,19 +180,28 @@ export default function ProductForm(props) {
       status: values.status,
       ...(values.slug?.trim() ? {
         slug: values.slug.trim()
-      } : {}),
-      ...(imageUrls.length ? {
-        imageUrls
       } : {})
     };
 
     setPageError("");
 
     try {
+      let savedProduct;
+
       if (product?.id) {
-        await updateAdminProduct(product.id, payload);
+        savedProduct = await updateAdminProduct(product.id, payload);
       } else {
-        await createAdminProduct(payload);
+        savedProduct = await createAdminProduct(payload);
+      }
+
+      const productId = savedProduct?.id || product?.id;
+
+      if (productId && removedImageIds.length) {
+        await Promise.all(removedImageIds.map(imageId => deleteAdminProductImage(productId, imageId)));
+      }
+
+      if (productId && pendingFiles.length) {
+        await uploadAdminProductImages(productId, pendingFiles);
       }
 
       router.replace(`/admin/products?updated=${Date.now()}`);
@@ -234,7 +284,65 @@ export default function ProductForm(props) {
           </Grid>
 
           <Grid size={12}>
-            <TextField rows={4} multiline fullWidth color="info" size="medium" name="imageUrlsText" label="Image URLs" placeholder="One image URL per line" helperText="Direct file upload is disabled for now. Enter one image URL per line." />
+            <Typography variant="h6" sx={{
+            mb: 2
+          }}>
+              Product Images
+            </Typography>
+
+            <DropZone onChange={handleDropFiles} info="Upload up to 10 images. Supported formats: PNG, JPG, JPEG, GIF, WEBP. Max 5 MB per image." />
+
+            {existingImages.length || pendingImagePreviews.length ? <Box mt={3} display="grid" gridTemplateColumns={{
+            md: "repeat(4, minmax(0, 1fr))",
+            sm: "repeat(3, minmax(0, 1fr))",
+            xs: "repeat(2, minmax(0, 1fr))"
+          }} gap={2}>
+                {existingImages.map(image => <Box key={image.id} p={1.5} border="1px solid" borderColor="divider" borderRadius={2} bgcolor="grey.50">
+                    <Box component="img" src={image.imageUrl} alt="Product" sx={{
+                  width: "100%",
+                  height: 140,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  display: "block",
+                  mb: 1
+                }} />
+
+                    <Box display="flex" alignItems="center" justifyContent="space-between" gap={1}>
+                      <Typography variant="caption" color="text.secondary">
+                        Uploaded image
+                      </Typography>
+
+                      <IconButton color="error" onClick={() => handleRemoveExistingImage(image.id)}>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>)}
+
+                {pendingImagePreviews.map(item => <Box key={item.key} p={1.5} border="1px solid" borderColor="divider" borderRadius={2} bgcolor="grey.50">
+                    <Box component="img" src={item.previewUrl} alt={item.file.name} sx={{
+                  width: "100%",
+                  height: 140,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  display: "block",
+                  mb: 1
+                }} />
+
+                    <Box display="flex" alignItems="center" justifyContent="space-between" gap={1}>
+                      <Typography variant="caption" color="text.secondary" sx={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>
+                        Pending upload
+                      </Typography>
+
+                      <IconButton color="error" onClick={() => handleRemovePendingFile(item.key)}>
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>)}
+              </Box> : null}
           </Grid>
 
           <Grid size={12}>

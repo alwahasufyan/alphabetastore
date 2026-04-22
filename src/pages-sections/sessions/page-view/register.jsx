@@ -66,13 +66,13 @@ export default function RegisterPageView() {
 
     try {
       await apiPost("/auth/register", {
-        name: values.name,
-        email: values.email,
+        name: values.name.trim(),
+        email: values.email.trim().toLowerCase(),
         password: values.password
       });
       router.push("/login");
     } catch (error) {
-      setErrorMessage(error instanceof Error && error.message === "Email is already in use." ? "Email already in use" : "Email already in use");
+      setErrorMessage(error instanceof Error ? error.message : "Failed to create account.");
     }
   });
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
@@ -86,7 +86,7 @@ export default function RegisterPageView() {
       </div>
 
       <div className="mb-1">
-        <Label>Email or Phone Number</Label>
+        <Label>Email Address</Label>
         <TextField fullWidth name="email" size="medium" type="email" placeholder="exmple@mail.com" />
       </div>
 

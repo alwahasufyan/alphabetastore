@@ -41,7 +41,8 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto): Promise<RegisterResponse> {
-    const existingUser = await this.usersService.findByEmail(registerDto.email);
+    const normalizedEmail = registerDto.email.trim().toLowerCase();
+    const existingUser = await this.usersService.findByEmail(normalizedEmail);
 
     if (existingUser) {
       throw new ConflictException(AUTH_MESSAGES.EMAIL_ALREADY_IN_USE);
@@ -51,7 +52,7 @@ export class AuthService {
 
     return this.usersService.createCustomer({
       name: registerDto.name,
-      email: registerDto.email,
+      email: normalizedEmail,
       phone: registerDto.phone,
       passwordHash,
     });
@@ -114,7 +115,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string) {
-    const user = await this.usersService.findByEmail(email);
+    const user = await this.usersService.findByEmail(email.trim().toLowerCase());
 
     if (!user) {
       return null;

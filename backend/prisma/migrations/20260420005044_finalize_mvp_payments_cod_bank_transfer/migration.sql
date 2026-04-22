@@ -1,0 +1,4 @@
+-- Historical placeholder retained to keep local migration history aligned.
+-- The effective payment finalization steps now run in
+-- 20260420114000_finalize_mvp_payments_cod_bank_transfer,
+-- after PaymentMethodCode is created.

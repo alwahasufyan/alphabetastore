@@ -1,7 +1,6 @@
 import { RefundRequestPageView } from "pages-sections/vendor-dashboard/refund-request/page-view";
 
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
+import { refundRequest } from "__server__/__db__/dashboard/refundRequests";
 export const metadata = {
   title: "Refund Request - Bazaar Next.js E-commerce Template",
   description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
@@ -12,6 +11,5 @@ export const metadata = {
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function RefundRequest() {
-  const requests = await api.refundRequests();
-  return <RefundRequestPageView requests={requests} />;
+  return <RefundRequestPageView requests={refundRequest} />;
 }

@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { format } from "date-fns/format";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 
 // GLOBAL CUSTOM COMPONENTS
 import FlexBox from "components/flex-box/flex-box";
+import { formatPreferredPaymentMethod } from "utils/users";
 
 // CUSTOM DATA MODEL
 
@@ -38,11 +38,10 @@ export default function UserInfo({
         xs: "flex-start"
       }
     }}>
-        <TableRowItem title="First Name" value={user.name.firstName} />
-        <TableRowItem title="Last Name" value={user.name.lastName} />
+        <TableRowItem title="Name" value={user.name} />
         <TableRowItem title="Email" value={user.email} />
-        <TableRowItem title="Phone" value={user.phone} />
-        <TableRowItem title="Birth date" value={format(new Date(user.dateOfBirth), "dd MMM, yyyy")} />
+        <TableRowItem title="Phone" value={user.phone || "Not provided"} />
+        <TableRowItem title="Preferred Payment" value={formatPreferredPaymentMethod(user.preferredPaymentMethod)} />
       </Card>
     </Link>;
 }

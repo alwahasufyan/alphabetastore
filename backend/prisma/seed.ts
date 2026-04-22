@@ -2,7 +2,7 @@ import 'dotenv/config';
 
 import * as bcrypt from 'bcrypt';
 
-import { PrismaClient, Role, UserStatus } from '../src/prisma/prisma-client';
+import { PaymentMethodCode, PrismaClient, Role, UserStatus } from '../src/prisma/prisma-client';
 
 const prisma = new PrismaClient();
 
@@ -34,7 +34,36 @@ async function main() {
       status: UserStatus.ACTIVE,
     },
   });
+
+  const paymentMethods = [
+    {
+      code: PaymentMethodCode.COD,
+      name: 'Cash on Delivery',
+    },
+    {
+      code: PaymentMethodCode.BANK_TRANSFER,
+      name: 'Bank Transfer',
+    },
+  ];
+
+  for (const paymentMethod of paymentMethods) {
+    await prisma.paymentMethod.upsert({
+      where: {
+        code: paymentMethod.code,
+      },
+      update: {
+        name: paymentMethod.name,
+        isActive: true,
+      },
+      create: {
+        code: paymentMethod.code,
+        name: paymentMethod.name,
+        isActive: true,
+      },
+    });
+  }
 }
+
 
 main()
   .catch((error) => {

@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
-import { SupportTicketsPageView } from "pages-sections/vendor-dashboard/support-tickets/page-view";
+import { redirect } from "next/navigation";
 
-// API FUNCTIONS
-import api from "utils/__api__/ticket";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Support Tickets - Bazaar Next.js E-commerce Template",
   description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
@@ -12,10 +12,7 @@ export const metadata = {
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
-export default async function SupportTickets() {
-  const {
-    tickets
-  } = await api.getTicketList();
-  if (!tickets || tickets.length === 0) notFound();
-  return <SupportTicketsPageView tickets={tickets} />;
+
+export default function SupportTicketsRedirect() {
+  redirect("/admin/tickets");
 }

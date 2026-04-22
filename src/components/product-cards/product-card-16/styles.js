@@ -14,6 +14,12 @@ export const StyledRoot = styled("div")(({
     display: "flex",
     position: "relative",
     backgroundColor: theme.palette.grey[50],
+    ".wishlist-btn": {
+      top: 12,
+      right: 12,
+      zIndex: 2,
+      position: "absolute"
+    },
     img: {
       transition: "0.3s"
     }

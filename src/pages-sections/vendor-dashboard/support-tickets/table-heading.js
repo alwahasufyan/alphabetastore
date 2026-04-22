@@ -1,18 +1,18 @@
 export const tableHeading = [{
-  id: "title",
-  label: "Information",
+  id: "subject",
+  label: "Ticket",
   align: "left"
 }, {
-  id: "type",
-  label: "Type",
+  id: "priorityLabel",
+  label: "Priority",
   align: "left"
 }, {
-  id: "date",
+  id: "createdAt",
   label: "Ticket Date",
   align: "left"
 }, {
-  id: "category",
-  label: "Problem Title",
+  id: "statusLabel",
+  label: "Status",
   align: "left"
 }, {
   id: "action",

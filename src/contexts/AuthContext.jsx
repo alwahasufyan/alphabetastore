@@ -74,7 +74,7 @@ export function AuthProvider({ children }) {
     loadCurrentUser,
     logout,
     loading,
-    isAuthenticated: Boolean(user) || isLoggedIn()
+    isAuthenticated: Boolean(user)
   }}>{children}</AuthContext.Provider>;
 }
 

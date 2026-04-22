@@ -12,6 +12,12 @@ export function saveTokens(accessToken: string, refreshToken: string) {
   window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
 }
 
+export function saveAccessToken(accessToken: string) {
+  if (!canUseStorage()) return;
+
+  window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+}
+
 export function getAccessToken() {
   if (!canUseStorage()) return null;
 

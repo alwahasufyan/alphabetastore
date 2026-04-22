@@ -1,7 +1,8 @@
 import { TicketsPageView } from "pages-sections/customer-dashboard/support-tickets/page-view";
 
-// API FUNCTIONS
-import api from "utils/__api__/ticket";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Support Tickets - Bazaar Next.js E-commerce Template",
   description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
@@ -13,20 +14,6 @@ export const metadata = {
 };
 
 
-// ==============================================================
-
-
-// ==============================================================
-
-export default async function SupportTickets({
-  searchParams
-}) {
-  const {
-    page
-  } = await searchParams;
-  const data = await api.getTicketList(+page || 1);
-  if (!data || data.tickets.length === 0) {
-    return <div>Data not found</div>;
-  }
-  return <TicketsPageView tickets={data.tickets} totalPages={data.totalPages} />;
+export default function SupportTickets() {
+  return <TicketsPageView />;
 }

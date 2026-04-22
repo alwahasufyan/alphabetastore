@@ -6,9 +6,12 @@ import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
 import { validationSchema } from './config/env.validation';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
+import { TicketsModule } from './tickets/tickets.module';
 import { UsersModule } from './users/users.module';
+import { WishlistModule } from './wishlist/wishlist.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { UsersModule } from './users/users.module';
     ProductsModule,
     CartModule,
     OrdersModule,
+    PaymentsModule,
+    TicketsModule,
+    WishlistModule,
   ],
 })
 export class AppModule {}

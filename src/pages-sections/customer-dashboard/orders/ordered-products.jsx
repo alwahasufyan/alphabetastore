@@ -39,7 +39,7 @@ export default function OrderedProducts({
       <FlexBetween px={3} py={2} flexWrap="wrap" gap={1} bgcolor="grey.50">
         <Item title="Order ID:" value={id} />
         <Item title="Placed on:" value={format(new Date(createdAt), "dd MMM, yyyy")} />
-        <Item title="Delivered on:" value={deliveredAt ? format(new Date(deliveredAt), "dd MMM, yyyy") : "None"} />
+        <Item title="Status:" value={order.statusLabel} />
       </FlexBetween>
 
       {items.map((item, ind) => <FlexBetween px={2} py={1} flexWrap="wrap" key={ind} gap={1}>
@@ -49,23 +49,19 @@ export default function OrderedProducts({
           width: 60,
           backgroundColor: "grey.50"
         }}>
-              <Image fill alt={item.product_name} src={item.product_img} sizes="(60px, 60px)" />
+              <Image fill alt={item.productName} src={item.product.imageUrl} sizes="(60px, 60px)" />
             </Avatar>
 
             <div>
               <Typography noWrap variant="h6">
-                {item.product_name}
+                {item.productName}
               </Typography>
 
               <Typography lineHeight={2} variant="body1" color="text.secondary">
-                {currency(item.product_price)} x {item.product_quantity}
+                {currency(item.unitPrice)} x {item.quantity}
               </Typography>
             </div>
           </FlexBox>
-
-          {item.variant && <Typography noWrap variant="body1" color="text.secondary">
-              Product properties: {item.variant}
-            </Typography>}
 
           <Button variant="text" color="primary">
             Write a Review

@@ -2,6 +2,62 @@ import { API_BASE_URL } from "./api";
 
 export const FALLBACK_PRODUCT_IMAGE = "/assets/images/products/apple-watch.png";
 
+const MISSING_PRODUCT_IMAGE_PATHS = new Set([
+  "/assets/images/products/placeholder.png",
+  "placeholder.png"
+]);
+
+function getBackendOrigin() {
+  try {
+    return new URL(API_BASE_URL).origin;
+  } catch {
+    return "";
+  }
+}
+
+export function normalizeProductImageUrl(imageUrl) {
+  const nextImageUrl = String(imageUrl || "").trim();
+
+  if (!nextImageUrl || MISSING_PRODUCT_IMAGE_PATHS.has(nextImageUrl)) {
+    return FALLBACK_PRODUCT_IMAGE;
+  }
+
+  if (/^https?:\/\//i.test(nextImageUrl)) {
+    return nextImageUrl;
+  }
+
+  if (nextImageUrl.startsWith("/uploads/")) {
+    const backendOrigin = getBackendOrigin();
+    return backendOrigin ? `${backendOrigin}${nextImageUrl}` : nextImageUrl;
+  }
+
+  return nextImageUrl;
+}
+
+function buildCatalogQueryString(filters = {}) {
+  const params = new URLSearchParams();
+  const query = filters.q?.trim() || filters.search?.trim();
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  if (filters.category) {
+    params.set("category", filters.category);
+  }
+
+  if (filters.status) {
+    params.set("status", filters.status);
+  }
+
+  if (filters.sort && filters.sort !== "relevance") {
+    params.set("sort", filters.sort);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : "";
+}
+
 async function fetchCatalog(path, fallbackMessage) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     cache: "no-store"
@@ -33,8 +89,8 @@ export async function fetchCategories() {
   return fetchCatalog("/categories", "Failed to load categories");
 }
 
-export async function fetchProducts() {
-  const products = await fetchCatalog("/products", "Failed to load products");
+export async function fetchProducts(filters = {}) {
+  const products = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products");
   return Array.isArray(products) ? products.map(mapCatalogProduct) : [];
 }
 
@@ -44,7 +100,7 @@ export async function fetchProductBySlug(slug) {
 }
 
 export function mapCatalogProduct(product) {
-  const imageUrls = Array.isArray(product?.images) ? product.images.map(item => item?.imageUrl).filter(Boolean) : [];
+  const imageUrls = Array.isArray(product?.images) ? product.images.map(item => normalizeProductImageUrl(item?.imageUrl)).filter(Boolean) : [];
   const images = imageUrls.length ? imageUrls : [FALLBACK_PRODUCT_IMAGE];
   const price = Number(product?.price ?? 0);
 
@@ -109,13 +165,18 @@ export function buildProductFilters(categories) {
     others: [],
     colors: [],
     categories: topLevel.map(parent => {
-      const children = sortByName(normalized.filter(item => item.parentId === parent.id)).map(child => child.name);
+      const children = sortByName(normalized.filter(item => item.parentId === parent.id)).map(child => ({
+        title: child.name,
+        slug: child.slug
+      }));
 
       return children.length ? {
         title: parent.name,
+        slug: parent.slug,
         children
       } : {
-        title: parent.name
+        title: parent.name,
+        slug: parent.slug
       };
     })
   };

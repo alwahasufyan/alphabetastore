@@ -54,7 +54,7 @@ const StatusWrapper = styled(Box, {
 }) => {
   let color = theme.palette.secondary.main;
   let backgroundColor = theme.palette.secondary[100];
-  if (status === "Accepted" || status === "Delivered" || status === "Normal") {
+  if (status === "Accepted" || status === "Delivered" || status === "Normal" || status === "Confirmed") {
     color = theme.palette.success.main;
     backgroundColor = theme.palette.success[100];
   }

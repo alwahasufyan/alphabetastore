@@ -1,14 +1,20 @@
-import { getAccessToken } from "./auth";
+import { clearTokens, getAccessToken, getRefreshToken, saveAccessToken } from "./auth";
 import { ensureCartSessionId } from "./cart";
 
-export const API_BASE_URL = "http://localhost:3001/api/v1";
+const DEFAULT_API_BASE_URL = "http://localhost:3001/api/v1";
+
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
 
 type ApiMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 type RequestOptions = {
   method?: ApiMethod;
   body?: unknown;
+  retryOnUnauthorized?: boolean;
 };
+
+let refreshRequest: Promise<string | null> | null = null;
 
 function getErrorMessage(payload: unknown, fallback: string) {
   if (typeof payload === "string") {
@@ -30,13 +36,15 @@ function getErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
-export async function apiRequest(path: string, options: RequestOptions = {}) {
-  const { method = "GET", body } = options;
-  const token = getAccessToken();
+function isFormData(value: unknown): value is FormData {
+  return typeof FormData !== "undefined" && value instanceof FormData;
+}
+
+function buildHeaders(method: ApiMethod, token?: string | null, body?: unknown) {
   const headers: Record<string, string> = {};
   const sessionId = ensureCartSessionId();
 
-  if (method === "POST" || method === "PATCH") {
+  if ((method === "POST" || method === "PATCH") && !isFormData(body)) {
     headers["Content-Type"] = "application/json";
   }
 
@@ -48,15 +56,79 @@ export async function apiRequest(path: string, options: RequestOptions = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
+  return headers;
+}
+
+async function parseJsonResponse(response: Response) {
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function refreshAccessToken() {
+  const refreshToken = getRefreshToken();
+
+  if (!refreshToken) {
+    return null;
+  }
+
+  if (!refreshRequest) {
+    refreshRequest = (async () => {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const data = await parseJsonResponse(response);
+
+      if (!response.ok || !data?.accessToken) {
+        clearTokens();
+        return null;
+      }
+
+      saveAccessToken(data.accessToken);
+      return data.accessToken;
+    })().finally(() => {
+      refreshRequest = null;
+    });
+  }
+
+  return refreshRequest;
+}
+
+export async function apiRequest(path: string, options: RequestOptions = {}) {
+  const { method = "GET", body, retryOnUnauthorized = true } = options;
+  const token = getAccessToken();
+  const headers = buildHeaders(method, token, body);
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
     cache: "no-store",
-    body: body ? JSON.stringify(body) : undefined,
+    body: body ? isFormData(body) ? body : JSON.stringify(body) : undefined,
   });
 
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  const data = await parseJsonResponse(response);
+
+  if (
+    response.status === 401 &&
+    retryOnUnauthorized &&
+    path !== "/auth/refresh" &&
+    path !== "/auth/login"
+  ) {
+    const nextAccessToken = await refreshAccessToken();
+
+    if (nextAccessToken) {
+      return apiRequest(path, {
+        method,
+        body,
+        retryOnUnauthorized: false,
+      });
+    }
+  }
 
   if (!response.ok) {
     throw new Error(getErrorMessage(data, "Request failed"));

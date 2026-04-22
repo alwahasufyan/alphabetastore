@@ -1,10 +1,4 @@
-import { notFound } from "next/navigation";
 import { AddressDetailsPageView } from "pages-sections/customer-dashboard/address/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/address";
-
-// CUSTOM DATA MODEL
 
 export async function generateMetadata({
   params
@@ -12,10 +6,8 @@ export async function generateMetadata({
   const {
     id
   } = await params;
-  const address = await api.getAddress(id);
-  if (!address) notFound();
   return {
-    title: address.title + " - Bazaar Next.js E-commerce Template",
+    title: `${id === "new" ? "Add" : "Edit"} Address - Bazaar Next.js E-commerce Template`,
     description: "Bazaar is a React Next.js E-commerce template.",
     authors: [{
       name: "UI-LIB",
@@ -30,7 +22,5 @@ export default async function Address({
   const {
     id
   } = await params;
-  const address = await api.getAddress(id);
-  if (!address) notFound();
-  return <AddressDetailsPageView address={address} />;
+  return <AddressDetailsPageView addressId={id} />;
 }

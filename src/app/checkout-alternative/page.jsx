@@ -1,4 +1,4 @@
-import CheckoutAlternativePageView from "pages-sections/checkout-alternative/page-view";
+import { redirect } from "next/navigation";
 export const metadata = {
   title: "Checkout Alternative - Bazaar Next.js E-commerce Template",
   description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store",
@@ -9,5 +9,5 @@ export const metadata = {
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default function CheckoutAlternative() {
-  return <CheckoutAlternativePageView />;
+  redirect("/checkout");
 }

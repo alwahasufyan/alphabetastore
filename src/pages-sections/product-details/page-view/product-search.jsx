@@ -24,7 +24,7 @@ import { FlexBetween, FlexBox } from "components/flex-box";
 import ProductFilters from "components/products-view/filters";
 import ProductsGridView from "components/products-view/products-grid-view";
 import ProductsListView from "components/products-view/products-list-view";
-import { buildProductFilters, fetchCategories, fetchProducts, filterCatalogProducts } from "utils/catalog";
+import { buildProductFilters, fetchCategories, fetchProducts } from "utils/catalog";
 
 // TYPES
 
@@ -77,16 +77,17 @@ export default function ProductSearchPageView() {
         setLoading(true);
         setError("");
 
-        const [categoriesResponse, productsResponse] = await Promise.all([fetchCategories(), fetchProducts()]);
+        const [categoriesResponse, productsResponse] = await Promise.all([fetchCategories(), fetchProducts({
+          q: query,
+          category,
+          sort,
+          status: "ACTIVE"
+        })]);
 
         if (!active) return;
 
         setFilters(buildProductFilters(categoriesResponse));
-        setProducts(filterCatalogProducts(productsResponse, {
-          q: query,
-          category,
-          sort
-        }));
+        setProducts(productsResponse);
       } catch {
         if (!active) return;
 

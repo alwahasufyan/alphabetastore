@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { format } from "date-fns/format";
 
-// MUI ICON COMPONENTS
-import Delete from "@mui/icons-material/Delete";
 import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 
 // CUSTOM UTILS LIBRARY FUNCTION
@@ -56,10 +54,6 @@ export default function OrderRow({
             <RemoveRedEye />
           </StyledIconButton>
         </Link>
-
-        <StyledIconButton>
-          <Delete />
-        </StyledIconButton>
       </StyledTableCell>
     </StyledTableRow>;
 }

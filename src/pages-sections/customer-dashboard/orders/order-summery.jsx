@@ -36,7 +36,7 @@ export default function OrderSummery({
             Shipping Address
           </Typography>
 
-          <Typography variant="body1">{order.shippingAddress}</Typography>
+          <Typography variant="body1">{order.shippingAddress || "No address provided."}</Typography>
         </Card>
       </Grid>
 
@@ -55,9 +55,9 @@ export default function OrderSummery({
             Total Summary
           </Typography>
 
-          <ListItem title="Subtotal:" value={currency(order.totalPrice)} />
+          <ListItem title="Subtotal:" value={currency(order.totalAmount)} />
           <ListItem title="Shipping fee:" value={currency(0)} />
-          <ListItem title="Discount:" value={currency(order.discount)} />
+          <ListItem title="Discount:" value={currency(0)} />
 
           <Divider sx={{
           mb: 1
@@ -65,10 +65,17 @@ export default function OrderSummery({
 
           <FlexBetween mb={2}>
             <Typography variant="h6">Total</Typography>
-            <Typography variant="h6">{currency(order.totalPrice)}</Typography>
+            <Typography variant="h6">{currency(order.totalAmount)}</Typography>
           </FlexBetween>
 
-          <p>Paid by Credit/Debit Card</p>
+          <p>{order.paymentMethod}</p>
+          <Typography variant="body2" color="text.secondary" sx={{
+          mb: order.notes ? 1 : 0
+        }}>
+            Payment status: {order.paymentStatusLabel}
+          </Typography>
+
+          {order.notes ? <Typography variant="body2" color="text.secondary">Customer note: {order.notes}</Typography> : null}
         </Card>
       </Grid>
     </Grid>;

@@ -11,9 +11,9 @@ import { styled } from "@mui/material/styles";
 import Done from "@mui/icons-material/Done";
 
 // CUSTOM ICON COMPONENTS
-import Delivery from "icons/Delivery";
 import PackageBox from "icons/PackageBox";
 import TruckFilled from "icons/TruckFilled";
+import Delivery from "icons/Delivery";
 
 // GLOBAL CUSTOM COMPONENTS
 import { FlexBetween, FlexBox } from "components/flex-box";
@@ -89,25 +89,49 @@ const DeliveryDateBox = styled("div")(({
 
 // ==============================================================
 
-const STEP_ICONS = [PackageBox, TruckFilled, Delivery];
-const ORDER_STATUS_LIST = ["Pending", "Processing", "Delivered"];
+const ORDER_STEPS = [{
+  icon: PackageBox,
+  label: "Pending",
+  value: "PENDING"
+}, {
+  icon: TruckFilled,
+  label: "Confirmed",
+  value: "CONFIRMED"
+}, {
+  icon: Delivery,
+  label: "Processing",
+  value: "PROCESSING"
+}, {
+  icon: Done,
+  label: "Delivered",
+  value: "DELIVERED"
+}];
 export default function OrderProgress({
   status,
-  deliveredAt,
-  isDelivered
+  statusLabel
 }) {
-  const statusIndex = ORDER_STATUS_LIST.indexOf(status);
+  const statusIndex = ORDER_STEPS.findIndex(item => item.value === status);
+  const isCancelled = status === "CANCELLED";
+
   return <Card elevation={0} sx={{
     mb: 4,
     p: "2rem 1.5rem",
     border: "1px solid",
-    borderColor: "grey.100"
+    borderColor: isCancelled ? "error.light" : "grey.100"
   }}>
+      {isCancelled ? <DeliveryDateBox style={{
+      backgroundColor: "#fdecea",
+      color: "#d32f2f"
+    }}>
+          Current Status <b>{statusLabel}</b>
+        </DeliveryDateBox> : null}
+
+      {!isCancelled ? <>
       <StyledFlexbox>
-        {STEP_ICONS.map((Icon, ind) => <Fragment key={`step-${ind}`}>
+        {ORDER_STEPS.map((step, ind) => <Fragment key={step.value}>
             <Box position="relative">
               <StyledStatusAvatar alt={`shipping-step-${ind + 1}`} className={ind <= statusIndex ? "completed" : "pending"}>
-                <Icon color="inherit" fontSize="large" />
+                <step.icon color="inherit" fontSize="large" />
               </StyledStatusAvatar>
 
               {ind < statusIndex && <StyledAvatar alt="completed-step">
@@ -115,7 +139,7 @@ export default function OrderProgress({
                 </StyledAvatar>}
             </Box>
 
-            {ind < STEP_ICONS.length - 1 && <Box className="line" bgcolor={ind < statusIndex ? "primary.main" : "grey.100"} />}
+            {ind < ORDER_STEPS.length - 1 && <Box className="line" bgcolor={ind < statusIndex ? "primary.main" : "grey.100"} />}
           </Fragment>)}
       </StyledFlexbox>
 
@@ -124,9 +148,9 @@ export default function OrderProgress({
       sm: "flex-end"
     }}>
         <DeliveryDateBox>
-          Estimated Delivery Date{" "}
-          <b>{isDelivered ? format(new Date(deliveredAt), "dd MMM yyyy") : "N/A"}</b>
+          Current Status <b>{statusLabel}</b>
         </DeliveryDateBox>
       </FlexBox>
+      </> : null}
     </Card>;
 }

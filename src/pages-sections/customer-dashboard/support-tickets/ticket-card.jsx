@@ -24,14 +24,15 @@ export default function TicketCard({
 }) {
   const {
     id,
-    slug,
-    title,
-    type,
+    subject,
+    priority,
+    priorityLabel,
     status,
-    date,
-    category
+    statusLabel,
+    createdAt,
+    ticketNumber
   } = ticket;
-  return <Link href={`/support-tickets/${slug}`} key={id}>
+  return <Link href={`/support-tickets/${id}`} key={id}>
       <Card elevation={0} sx={{
       display: "flex",
       alignItems: "center",
@@ -46,19 +47,19 @@ export default function TicketCard({
           <Typography variant="body1" fontWeight={500} sx={{
           mb: 1.5
         }}>
-            {title}
+            {subject}
           </Typography>
 
           <FlexBox alignItems="center" flexWrap="wrap" gap={1}>
-            <Chip label={type} size="small" color={type === "Urgent" ? "error" : "info"} />
-            <Chip label={status} size="small" color="success" />
+            <Chip label={priorityLabel} size="small" color={priority === "URGENT" ? "error" : "info"} />
+            <Chip label={statusLabel} size="small" color={status === "CLOSED" ? "default" : status === "IN_PROGRESS" ? "warning" : "success"} />
 
             <Typography variant="body1" className="pre" color="text.secondary">
-              {format(new Date(date), "MMM dd, yyyy")}
+              {createdAt ? format(new Date(createdAt), "MMM dd, yyyy") : ""}
             </Typography>
 
             <Typography variant="body1" color="text.disabled">
-              {category}
+              {ticketNumber}
             </Typography>
           </FlexBox>
         </div>

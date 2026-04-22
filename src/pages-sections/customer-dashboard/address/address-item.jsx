@@ -18,16 +18,17 @@ import DeleteAddressBtn from "./delete-btn";
 // ==============================================================
 
 export default function AddressListItem({
-  address
+  address,
+  onDeleted
 }) {
   return <Link href={`/address/${address.id}`}>
       <TableRow elevation={0}>
         <Typography noWrap fontWeight={500} variant="body1">
-          {address.title}
+          {address.label}
         </Typography>
 
         <Typography noWrap variant="body1">
-          {`${address.street}, ${address.city}`}
+          {address.displayAddress}
         </Typography>
 
         <Typography noWrap variant="body1">
@@ -39,7 +40,7 @@ export default function AddressListItem({
             <Pencil fontSize="small" color="inherit" />
           </IconButton>
 
-          <DeleteAddressBtn id={address.id} />
+          <DeleteAddressBtn id={address.id} onDeleted={onDeleted} />
         </Typography>
       </TableRow>
     </Link>;

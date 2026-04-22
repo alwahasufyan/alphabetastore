@@ -4,6 +4,7 @@ import Typography from "@mui/material/Typography";
 
 // GLOBAL CUSTOM COMPONENTS
 import LazyImage from "components/LazyImage";
+import WishlistToggleButton from "components/wishlist/wishlist-toggle-button";
 
 // LOCAL CUSTOM COMPONENTS
 import AddToCart from "./add-to-cart";
@@ -37,6 +38,13 @@ export default function ProductCard16({
   return <StyledRoot>
       <Link href={`/products/${slug}`}>
         <div className="img-wrapper">
+          <div className="wishlist-btn">
+            <WishlistToggleButton productId={product.id} sx={{
+            backgroundColor: "common.white",
+            boxShadow: 1
+          }} />
+          </div>
+
           <LazyImage alt={title} width={380} height={379} src={thumbnail} />
           {discount ? <DiscountChip discount={discount} sx={{
           left: 20,

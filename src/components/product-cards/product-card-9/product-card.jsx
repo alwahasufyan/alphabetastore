@@ -37,7 +37,7 @@ export default function ProductCard9({
   } = product;
   return <Wrapper>
       {/* PRODUCT FAVORITE BUTTON */}
-      <FavoriteButton />
+      <FavoriteButton productId={product.id} />
 
       <ContentWrapper>
         <div className="img-wrapper">

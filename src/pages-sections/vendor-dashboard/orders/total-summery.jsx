@@ -1,6 +1,5 @@
 import Card from "@mui/material/Card";
 import Divider from "@mui/material/Divider";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 
 // GLOBAL CUSTOM COMPONENTS
@@ -16,8 +15,7 @@ import { currency } from "lib";
 // ==============================================================
 
 export default function TotalSummery({
-  total,
-  discount
+  order
 }) {
   return <Card sx={{
     px: 3,
@@ -35,7 +33,7 @@ export default function TotalSummery({
       }}>
           Subtotal:
         </Typography>
-        <Typography variant="h6">{currency(total)}</Typography>
+        <Typography variant="h6">{currency(order.totalAmount)}</Typography>
       </FlexBetween>
 
       <FlexBetween mb={1.5}>
@@ -45,10 +43,7 @@ export default function TotalSummery({
           Shipping fee:
         </Typography>
 
-        <FlexBox alignItems="center" gap={1} maxWidth={100}>
-          <p>$</p>
-          <TextField color="info" defaultValue={10} type="number" fullWidth />
-        </FlexBox>
+        <Typography variant="h6">{currency(0)}</Typography>
       </FlexBetween>
 
       <FlexBetween mb={1.5}>
@@ -58,10 +53,7 @@ export default function TotalSummery({
           Discount(%):
         </Typography>
 
-        <FlexBox alignItems="center" gap={1} maxWidth={100}>
-          <p>$</p>
-          <TextField color="info" defaultValue={discount} type="number" fullWidth />
-        </FlexBox>
+        <Typography variant="h6">{currency(0)}</Typography>
       </FlexBetween>
 
       <Divider sx={{
@@ -70,9 +62,17 @@ export default function TotalSummery({
 
       <FlexBetween mb={2}>
         <Typography variant="h6">Total</Typography>
-        <Typography variant="h6">{currency(total)}</Typography>
+        <Typography variant="h6">{currency(order.totalAmount)}</Typography>
       </FlexBetween>
 
-      <p>Paid by Credit/Debit Card</p>
+      <Typography variant="body2" color="text.secondary">
+        Payment method: {order.paymentMethod}
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary" sx={{
+        mt: 1
+      }}>
+        Payment status: {order.paymentStatusLabel}
+      </Typography>
     </Card>;
 }

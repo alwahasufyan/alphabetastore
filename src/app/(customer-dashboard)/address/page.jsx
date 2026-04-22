@@ -1,7 +1,4 @@
 import { AddressPageView } from "pages-sections/customer-dashboard/address/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/address";
 export const metadata = {
   title: "Address - Bazaar Next.js E-commerce Template",
   description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store",
@@ -21,12 +18,6 @@ export const metadata = {
 export default async function Address({
   searchParams
 }) {
-  const {
-    page
-  } = await searchParams;
-  const data = await api.getAddressList(+page || 1);
-  if (!data || data.addressList.length === 0) {
-    return <div>Data not found</div>;
-  }
-  return <AddressPageView addresses={data.addressList} totalPages={data.totalPages} />;
+  const resolvedSearchParams = await searchParams;
+  return <AddressPageView initialPage={Number(resolvedSearchParams?.page || 1)} />;
 }

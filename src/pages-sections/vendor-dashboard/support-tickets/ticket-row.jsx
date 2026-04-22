@@ -1,7 +1,10 @@
+import Link from "next/link";
+import { format } from "date-fns/format";
 
 // MUI ICON COMPONENTS
 import Edit from "@mui/icons-material/Edit";
-import Delete from "@mui/icons-material/Delete";
+import Visibility from "@mui/icons-material/Visibility";
+import Typography from "@mui/material/Typography";
 
 // STYLED COMPONENTS
 import { StatusWrapper, StyledTableRow, StyledTableCell, StyledIconButton } from "../styles";
@@ -18,28 +21,36 @@ export default function TicketRow({
   ticket
 }) {
   const {
-    title,
-    type,
-    date,
-    category
+    id,
+    subject,
+    customer,
+    priorityLabel,
+    statusLabel,
+    createdAt,
+    status
   } = ticket;
   return <StyledTableRow role="checkbox">
-      <StyledTableCell align="left">{title}</StyledTableCell>
-
       <StyledTableCell align="left">
-        <StatusWrapper status={type}>{type}</StatusWrapper>
+        <Typography fontWeight={600}>{subject}</Typography>
+        <Typography variant="body2" color="text.secondary">{customer?.name || "Customer"}</Typography>
       </StyledTableCell>
 
-      <StyledTableCell align="left">{date}</StyledTableCell>
-      <StyledTableCell align="left">{category}</StyledTableCell>
+      <StyledTableCell align="left">
+        <StatusWrapper status={priorityLabel}>{priorityLabel}</StatusWrapper>
+      </StyledTableCell>
+
+      <StyledTableCell align="left">{createdAt ? format(new Date(createdAt), "MMM dd, yyyy") : ""}</StyledTableCell>
+      <StyledTableCell align="left">
+        <StatusWrapper status={statusLabel === "Open" ? "Pending" : statusLabel}>{statusLabel}</StatusWrapper>
+      </StyledTableCell>
 
       <StyledTableCell align="center">
-        <StyledIconButton>
+        <StyledIconButton LinkComponent={Link} href={`/admin/tickets/${id}`}>
           <Edit />
         </StyledIconButton>
 
-        <StyledIconButton>
-          <Delete />
+        <StyledIconButton LinkComponent={Link} href={`/admin/tickets/${id}`}>
+          <Visibility />
         </StyledIconButton>
       </StyledTableCell>
     </StyledTableRow>;

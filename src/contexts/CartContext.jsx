@@ -4,6 +4,7 @@ import { createContext, useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAuth } from "contexts/AuthContext";
 import { apiDelete, apiGet, apiPatch, apiPost } from "utils/api";
+import { FALLBACK_PRODUCT_IMAGE, normalizeProductImageUrl } from "utils/catalog";
 
 import {
   CART_RESET_EVENT,
@@ -35,7 +36,7 @@ function normalizeCart(apiCart) {
     productId: item.productId,
     slug: item.product?.slug || "",
     title: item.product?.name || "Product",
-    thumbnail: item.product?.imageUrl || "/assets/images/products/placeholder.png",
+    thumbnail: normalizeProductImageUrl(item.product?.imageUrl || FALLBACK_PRODUCT_IMAGE),
     price: Number(item.unitPrice || 0),
     qty: item.quantity,
     total: Number(item.total || 0)

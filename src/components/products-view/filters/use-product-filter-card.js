@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import debounce from "lodash/debounce";
+
 export default function useProductFilterCard() {
   const router = useRouter();
   const pathname = usePathname();
@@ -12,10 +13,18 @@ export default function useProductFilterCard() {
   const sales = useMemo(() => JSON.parse(searchParams.get("sales") || "[]"), [searchParams]);
   const brands = useMemo(() => JSON.parse(searchParams.get("brands") || "[]"), [searchParams]);
   const handleChangeSearchParams = useCallback((key, value) => {
-    if (!key || !value) return;
+    if (!key) return;
+
     const params = new URLSearchParams(searchParams);
-    params.set(key, value);
-    router.push(`${pathname}?${params.toString()}`, {
+
+    if (value === undefined || value === null || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname, {
       scroll: false
     });
   }, [router, pathname, searchParams]);

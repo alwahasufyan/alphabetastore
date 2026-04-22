@@ -1,5 +1,6 @@
-import Image from "next/image";
 import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
 import { format } from "date-fns/format";
 
@@ -18,32 +19,36 @@ export default function ConversationCard({
   message
 }) {
   const {
-    imgUrl,
-    name,
+    sender,
     date,
     text
   } = message;
+  const senderName = sender?.name || "User";
+  const senderRole = sender?.role || "CUSTOMER";
+
   return <FlexBox gap={2} mb={4}>
       <Avatar variant="rounded">
-        <Image fill src={imgUrl} alt={name} sizes="(40px, 40px)" />
+        {senderName.slice(0, 1).toUpperCase()}
       </Avatar>
 
       <div>
-        <Typography variant="h5">{name}</Typography>
+        <FlexBox alignItems="center" gap={1} flexWrap="wrap">
+          <Typography variant="h5">{senderName}</Typography>
+          <Chip size="small" label={senderRole === "ADMIN" ? "Admin" : "Customer"} color={senderRole === "ADMIN" ? "warning" : "default"} />
+        </FlexBox>
 
         <Typography variant="body1" lineHeight={2} color="text.secondary">
-          {format(new Date(date), "hh:mm:a | dd MMM yyyy")}
+          {date ? format(new Date(date), "hh:mm:a | dd MMM yyyy") : ""}
         </Typography>
 
-        <Typography variant="body1" borderRadius={2} sx={{
+        <Box borderRadius={2} sx={{
         lineHeight: 1.7,
         marginTop: "1rem",
-        textAlign: "justify",
         padding: "1rem 1.5rem",
-        backgroundColor: "grey.100"
+        backgroundColor: senderRole === "ADMIN" ? "warning.50" : "grey.100"
       }}>
-          {text}
-        </Typography>
+          <Typography variant="body1">{text}</Typography>
+        </Box>
       </div>
     </FlexBox>;
 }

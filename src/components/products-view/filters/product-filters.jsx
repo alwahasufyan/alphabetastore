@@ -38,6 +38,7 @@ export default function ProductFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const selectedCategory = searchParams.get("category") || "";
   const {
     sales,
     brands,
@@ -52,6 +53,27 @@ export default function ProductFilters({
     handleChangeSales,
     handleChangeSearchParams
   } = useProductFilterCard();
+
+  const handleSelectCategory = slug => {
+    handleChangeSearchParams("category", selectedCategory === slug ? "" : slug);
+  };
+
+  const renderCategoryItem = item => {
+    const title = typeof item === "string" ? item : item?.title;
+    const slug = typeof item === "string" ? item : item?.slug;
+    const isSelected = Boolean(slug) && selectedCategory === slug;
+
+    return <Typography variant="body1" key={slug || title} onClick={slug ? () => handleSelectCategory(slug) : undefined} sx={{
+      py: 0.75,
+      fontSize: 14,
+      cursor: slug ? "pointer" : "default",
+      color: isSelected ? "primary.main" : "grey.600",
+      fontWeight: isSelected ? 600 : 400
+    }}>
+        {title}
+      </Typography>;
+  };
+
   const handleClearFilters = () => {
     router.push(pathname);
   };
@@ -63,34 +85,29 @@ export default function ProductFilters({
         Categories
       </Typography>
 
-      {CATEGORIES.map(item => item.children ? <Fragment key={item.title}>
+      {CATEGORIES.map(item => item.children ? <Fragment key={item.slug || item.title}>
             <AccordionHeader open={collapsed} onClick={() => setCollapsed(state => !state)} sx={{
         padding: ".5rem 0",
         cursor: "pointer",
         color: "grey.600"
       }}>
-              <Typography component="span">{item.title}</Typography>
+              <Typography component="span" onClick={event => {
+          event.stopPropagation();
+          if (item.slug) {
+            handleSelectCategory(item.slug);
+          }
+        }} sx={{
+          color: selectedCategory === item.slug ? "primary.main" : "inherit",
+          fontWeight: selectedCategory === item.slug ? 600 : 400
+        }}>{item.title}</Typography>
             </AccordionHeader>
 
             <Collapse in={collapsed}>
-              {item.children.map(name => <Typography variant="body1" key={name} sx={{
-          py: 0.75,
-          pl: "22px",
-          fontSize: 14,
-          cursor: "pointer",
-          color: "grey.600"
-        }}>
-                  {name}
-                </Typography>)}
+              {item.children.map(child => <Box key={(typeof child === "string" ? child : child?.slug) || (typeof child === "string" ? child : child?.title)} pl="22px">
+                  {renderCategoryItem(child)}
+                </Box>)}
             </Collapse>
-          </Fragment> : <Typography variant="body1" key={item.title} sx={{
-      py: 0.75,
-      fontSize: 14,
-      cursor: "pointer",
-      color: "grey.600"
-    }}>
-            {item.title}
-          </Typography>)}
+          </Fragment> : renderCategoryItem(item))}
 
       <Box component={Divider} my={3} />
 
