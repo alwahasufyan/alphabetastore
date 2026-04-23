@@ -31,10 +31,14 @@ export default function Error({
   error,
   reset
 }) {
-  console.log(error, error.message);
+  const message = error?.message || "An unexpected error occurred.";
+
   return <StyledRoot>
       <Card>
         <Typography variant="h1">Something went wrong!</Typography>
+        <Typography variant="body1" color="text.secondary">
+          {message}
+        </Typography>
         <Button color="error" variant="contained" onClick={() => reset()}>
           Try again
         </Button>

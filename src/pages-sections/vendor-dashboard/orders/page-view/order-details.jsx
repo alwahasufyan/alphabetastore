@@ -61,6 +61,12 @@ export default function OrderDetailsPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
+      {!isLoading && !pageError && !order ? <Alert severity="info" sx={{
+      mb: 3
+    }}>
+          Order not found or no longer available.
+        </Alert> : null}
+
       {!isLoading && !pageError && order ? <>
       <Grid container spacing={3}>
         <Grid size={12}>

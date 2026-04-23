@@ -10,7 +10,7 @@ export default function useDeliveryAddresses() {
   }, []);
   const handleDeleteDeliveryAddress = useCallback(id => {
     if (window.confirm("Are you sure you want to delete this address?")) {
-      console.log("delete address", id);
+      return;
     }
   }, []);
   const handleAddNewAddress = useCallback(() => {

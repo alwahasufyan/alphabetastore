@@ -1,53 +1,16 @@
 import { cache } from "react";
-import productDatabase from "data/product-database";
+import {
+  buildProductFilters,
+  fetchCategories,
+  fetchProducts,
+  filterCatalogProducts
+} from "utils/catalog";
 
-
-// FILTER OPTIONS
-const CATEGORIES = [{
-  title: "Bath Preparations",
-  children: ["Bubble Bath", "Bath Capsules", "Others"]
-}, {
-  title: "Eye Makeup Preparations"
-}, {
-  title: "Fragrance"
-}, {
-  title: "Hair Preparations"
-}];
-const BRANDS = [{
-  label: "Mac",
-  value: "mac"
-}, {
-  label: "Karts",
-  value: "karts"
-}, {
-  label: "Baals",
-  value: "baals"
-}, {
-  label: "Bukks",
-  value: "bukks"
-}, {
-  label: "Luasis",
-  value: "luasis"
-}];
-const OTHERS = [{
-  label: "On Sale",
-  value: "sale"
-}, {
-  label: "In Stock",
-  value: "stock"
-}, {
-  label: "Featured",
-  value: "featured"
-}];
-const COLORS = ["#1C1C1C", "#FF7A7A", "#FFC672", "#84FFB5", "#70F6FF", "#6B7AFF"];
 export const getFilters = cache(async () => {
-  return {
-    brands: BRANDS,
-    others: OTHERS,
-    colors: COLORS,
-    categories: CATEGORIES
-  };
+  const categories = await fetchCategories();
+  return buildProductFilters(categories);
 });
+
 export const getProducts = cache(async ({
   q,
   page,
@@ -59,36 +22,61 @@ export const getProducts = cache(async ({
   rating,
   category
 }) => {
-  let products = productDatabase.slice(95, 104);
-  if (sale) {
-    products = productDatabase.slice(0, 10);
-  }
-  if (prices) {
-    products = productDatabase.slice(10, 20);
-  }
-  if (colors) {
-    products = productDatabase.slice(20, 30);
-  }
-  if (brands) {
-    products = productDatabase.slice(30, 40);
-  }
-  if (rating) {
-    products = productDatabase.slice(40, 50);
-  }
-  if (q) {
-    products = productDatabase.slice(50, 60);
-  }
-  if (category) {
-    products = productDatabase.slice(60, 70);
-  }
-  if (sort) {
-    products = productDatabase.slice(70, 80);
-  }
+  const PAGE_SIZE = 12;
+  const currentPage = Math.max(Number(page) || 1, 1);
+
+  const products = await fetchProducts({
+    q,
+    category,
+    sort
+  });
+
+  const filteredProducts = filterCatalogProducts(products, {
+    q,
+    category,
+    sort
+  }).filter(item => {
+    if (sale && !(Number(item?.discount || 0) > 0)) {
+      return false;
+    }
+
+    if (rating && Number(item?.rating || 0) < Number(rating)) {
+      return false;
+    }
+
+    if (prices && Array.isArray(prices) && prices.length === 2) {
+      const minPrice = Number(prices[0]);
+      const maxPrice = Number(prices[1]);
+      const value = Number(item?.price || 0);
+
+      if (Number.isFinite(minPrice) && value < minPrice) {
+        return false;
+      }
+
+      if (Number.isFinite(maxPrice) && value > maxPrice) {
+        return false;
+      }
+    }
+
+    if (colors?.length) {
+      return false;
+    }
+
+    if (brands?.length) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const firstIndex = (currentPage - 1) * PAGE_SIZE;
+  const pagedProducts = filteredProducts.slice(firstIndex, firstIndex + PAGE_SIZE);
+
   return {
-    products,
-    pageCount: 1,
-    totalProducts: products.length,
-    firstIndex: 0,
-    lastIndex: 9
+    products: pagedProducts,
+    pageCount: Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE)),
+    totalProducts: filteredProducts.length,
+    firstIndex,
+    lastIndex: Math.max(firstIndex + pagedProducts.length - 1, firstIndex)
   };
 });

@@ -103,19 +103,22 @@ export function mapCatalogProduct(product) {
   const imageUrls = Array.isArray(product?.images) ? product.images.map(item => normalizeProductImageUrl(item?.imageUrl)).filter(Boolean) : [];
   const images = imageUrls.length ? imageUrls : [FALLBACK_PRODUCT_IMAGE];
   const price = Number(product?.price ?? 0);
+  const categoryName = product?.category?.name || "";
+  const categories = Array.isArray(product?.categories) ? product.categories.map(item => item?.name || item).filter(Boolean) : categoryName ? [categoryName] : [];
 
   return {
     ...product,
     title: product?.name || "Untitled Product",
     thumbnail: images[0],
     images,
+    categories,
     price: Number.isFinite(price) ? price : 0,
     discount: 0,
     rating: 0,
     reviews: [],
     brand: null,
     shop: null,
-    categoryName: product?.category?.name || ""
+    categoryName
   };
 }
 

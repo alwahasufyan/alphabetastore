@@ -4,6 +4,7 @@ import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableContainer from "@mui/material/TableContainer";
@@ -82,6 +83,9 @@ export default function OrdersPageView({
     defaultSort: "purchaseDate",
     defaultOrder: "desc"
   });
+
+  const pageCount = Math.max(1, Math.ceil(filteredList.length / rowsPerPage));
+
   return <PageWrapper title="Orders">
       <SearchArea url="/admin/orders" buttonText="" searchPlaceholder="Search Order..." />
 
@@ -104,14 +108,20 @@ export default function OrdersPageView({
                         <CircularProgress color="info" />
                       </Stack>
                     </td>
-                  </tr> : filteredList.map(order => <OrderRow order={order} key={order.id} />)}
+                  </tr> : filteredList.length ? filteredList.map(order => <OrderRow order={order} key={order.id} />) : <tr>
+                    <td colSpan={7}>
+                      <Stack alignItems="center" justifyContent="center" py={6}>
+                        <Typography color="text.secondary">No orders found for the current search.</Typography>
+                      </Stack>
+                    </td>
+                  </tr>}
               </TableBody>
             </Table>
           </TableContainer>
         </OverlayScrollbar>
 
         <Stack alignItems="center" my={4}>
-          <TablePagination onChange={handleChangePage} count={Math.ceil(filteredList.length / rowsPerPage)} />
+          <TablePagination onChange={handleChangePage} count={pageCount} />
         </Stack>
       </Card>
     </PageWrapper>;

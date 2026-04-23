@@ -28,7 +28,7 @@ export default function UploadButton({
         </Button>
       </label>
 
-      <input id={id} type="file" accept="image/*" className="hidden" onChange={e => console.log(e.target.files)} style={{
+      <input id={id} type="file" accept="image/*" className="hidden" onChange={() => {}} style={{
       display: "none"
     }} />
     </Fragment>;

@@ -35,13 +35,11 @@ export default function FooterForm() {
 
   
 // FORM SUBMIT HANDLER
-  const handleSubmitForm = handleSubmit(values => {
-    console.log(values);
-  });
+  const handleSubmitForm = handleSubmit(() => {});
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
       <Grid container spacing={3}>
         <Grid size={12}>
-          <DropZone onChange={files => console.log(files)} />
+          <DropZone onChange={() => {}} />
         </Grid>
 
         <Grid size={12}>

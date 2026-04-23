@@ -14,6 +14,7 @@ import { SectionHeader } from "./styles";
 
 // UTIL METHOD
 import axios from "utils/axiosInstance";
+import { mapCatalogProduct } from "utils/catalog";
 
 // CUSTOM DATA MODEL
 
@@ -46,7 +47,12 @@ export default function Section9() {
       }
     }).then(({
       data
-    }) => setProducts(data));
+    }) => {
+      const nextProducts = (Array.isArray(data) ? data : []).map(mapCatalogProduct);
+      setProducts(nextProducts);
+    }).catch(() => {
+      setProducts([]);
+    });
   }, [selected]);
   const handleSelected = useCallback(item => {
     setSelected(item);

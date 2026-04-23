@@ -1,39 +1,80 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
+import { FALLBACK_PRODUCT_IMAGE, fetchCategories, fetchProducts } from "utils/catalog";
+
+function getActiveCategories(categories) {
+  return (Array.isArray(categories) ? categories : []).filter(item => item?.isActive !== false);
+}
+
+function toSearchHref(slug) {
+  return `/products/search?category=${encodeURIComponent(slug)}`;
+}
 
 // CUSTOM DATA MODELS
 
 const getTopNewProducts = cache(async () => {
-  const response = await axios.get("/api/furniture-1/products?tag=new");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(0, 12);
 });
+
 const getTopSellingProducts = cache(async () => {
-  const response = await axios.get("/api/furniture-1/products?tag=top-selling");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(12, 24);
 });
+
 const getFurnitureProducts = cache(async category => {
-  const response = await axios.get("/api/furniture-1/all-products", {
-    params: {
-      category
-    }
+  if (!category) {
+    return fetchProducts();
+  }
+
+  return fetchProducts({
+    category
   });
-  return response.data;
 });
+
 const getFurnitureShopNavList = cache(async () => {
-  const response = await axios.get("/api/furniture-1/navigation");
-  return response.data;
-});
-const getMainCarouselData = cache(async () => {
-  const response = await axios.get("/api/furniture-1/main-carousel");
-  return response.data;
-});
-const getCategory = cache(async category => {
-  const response = await axios.get("/api/furniture-1/category", {
-    params: {
-      category
+  const categories = getActiveCategories(await fetchCategories());
+  const topLevel = categories.filter(item => !item.parentId);
+
+  const categoryItem = topLevel.map(parent => {
+    const children = categories.filter(item => item.parentId === parent.id).map(item => ({
+      title: item.name,
+      href: toSearchHref(item.slug)
+    }));
+
+    if (!children.length) {
+      return {
+        title: parent.name,
+        href: toSearchHref(parent.slug)
+      };
     }
+
+    return {
+      title: parent.name,
+      child: children
+    };
   });
-  return response.data;
+
+  return [{
+    category: "Browse Categories",
+    categoryItem
+  }];
+});
+
+const getMainCarouselData = cache(async () => {
+  const products = await fetchProducts();
+  return products.slice(0, 3).map(item => ({
+    id: item.id,
+    title: item.title || item.name,
+    description: item.shortDescription || item.description || "Comfort-first furniture for modern homes",
+    buttonText: "Shop Now",
+    buttonLink: `/products/${item.slug}`,
+    imgUrl: item.thumbnail || FALLBACK_PRODUCT_IMAGE
+  }));
+});
+
+const getCategory = cache(async category => {
+  const categories = getActiveCategories(await fetchCategories());
+  return categories.find(item => item.slug === category) || null;
 });
 export default {
   getCategory,

@@ -31,14 +31,14 @@ export default function PageSettings() {
   };
   return <div>
       <Stack spacing={3} mb={3}>
-        <DropZone onChange={files => console.log(files)} info=" Main Banner (1920 x 360) *. We had to limit height to maintain consistency. Some device both side of the banner might cropped for height limitation." />
+        <DropZone onChange={() => {}} info=" Main Banner (1920 x 360) *. We had to limit height to maintain consistency. Some device both side of the banner might cropped for height limitation." />
 
         <TextField select fullWidth color="info" size="medium" name="features" placeholder="Product Features" label="Product Features" defaultValue="electronics">
           <MenuItem value="electronics">Electronics</MenuItem>
           <MenuItem value="fashion">Fashion</MenuItem>
         </TextField>
 
-        <DropZone onChange={files => console.log(files)} info="All products page banner * (Recommended size 1025x120). We had to limit height to maintain consistency. Some device both side of the banner might cropped for height limitation." />
+        <DropZone onChange={() => {}} info="All products page banner * (Recommended size 1025x120). We had to limit height to maintain consistency. Some device both side of the banner might cropped for height limitation." />
       </Stack>
 
       <Box mb={4}>

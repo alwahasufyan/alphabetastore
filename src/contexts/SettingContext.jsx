@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
+
+import { apiGet } from "utils/api";
 
 
 // ============================================================
@@ -9,35 +11,81 @@ import { createContext, useEffect, useState } from "react";
 // ============================================================
 
 
-// SET "rtl" OR "ltr" HERE
-
-// THEN GOTO BROWSER CONSOLE AND RUN localStorage.clear() TO CLEAR LOCAL STORAGE
 const initialSettings = {
-  direction: "ltr"
+  direction: "ltr",
+  site_name: "Alphabeta",
+  theme: "default",
+  primary_color: "#1976d2",
+  enable_whatsapp: "true"
 };
+
+function normalizeSettings(value) {
+  if (!value || typeof value !== "object") {
+    return initialSettings;
+  }
+
+  const source = value;
+
+  return {
+    direction: source.direction === "rtl" ? "rtl" : "ltr",
+    site_name: String(source.site_name || initialSettings.site_name),
+    theme: String(source.theme || initialSettings.theme),
+    primary_color: String(source.primary_color || initialSettings.primary_color),
+    enable_whatsapp: String(source.enable_whatsapp ?? initialSettings.enable_whatsapp)
+  };
+}
+
 export const SettingsContext = createContext({
   settings: initialSettings,
-  updateSettings: arg => {}
+  loading: true,
+  updateSettings: arg => {},
+  refreshSettings: async () => ({})
 });
 export default function SettingsProvider({
   children
 }) {
   const [settings, setSettings] = useState(initialSettings);
-  const updateSettings = updatedSetting => {
-    setSettings(updatedSetting);
-    window.localStorage.setItem("settings", JSON.stringify(updatedSetting));
-  };
-  useEffect(() => {
-    if (!window) return;
-    const getItem = window.localStorage.getItem("settings");
-    if (getItem) {
-      queueMicrotask(() => setSettings(JSON.parse(getItem)));
-    } else {
-      queueMicrotask(() => setSettings(initialSettings));
-    }
+  const [loading, setLoading] = useState(true);
+
+  const updateSettings = useCallback(updatedSetting => {
+    setSettings(prev => ({
+      ...prev,
+      ...updatedSetting
+    }));
   }, []);
-  return <SettingsContext value={{
+
+  const refreshSettings = useCallback(async () => {
+    const remoteSettings = await apiGet("/settings");
+    const normalized = normalizeSettings(remoteSettings);
+    setSettings(prev => ({
+      ...prev,
+      ...normalized
+    }));
+    return normalized;
+  }, []);
+
+  useEffect(() => {
+    refreshSettings().catch(() => null).finally(() => {
+      setLoading(false);
+    });
+  }, [refreshSettings]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    if (settings.site_name) {
+      document.title = settings.site_name;
+    }
+  }, [settings.site_name]);
+
+  const contextValue = useMemo(() => ({
     settings,
-    updateSettings
-  }}>{children}</SettingsContext>;
+    loading,
+    updateSettings,
+    refreshSettings
+  }), [settings, loading, updateSettings, refreshSettings]);
+
+  return <SettingsContext value={contextValue}>{children}</SettingsContext>;
 }

@@ -1,30 +1,34 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
+import { apiGet } from "utils/api";
 
-// CUSTOM DATA MODEL
-
-const INFO_LIST = [{
-  title: "16",
-  subtitle: "All Orders"
-}, {
-  title: "02",
-  subtitle: "Awaiting Payments"
-}, {
-  title: "00",
-  subtitle: "Awaiting Shipment"
-}, {
-  title: "01",
-  subtitle: "Awaiting Delivery"
-}];
 export const getUser = cache(async () => {
-  const response = await axios.get("/api/user-list/1");
-  return response.data;
+  return apiGet("/users/me");
 });
+
 export const getUserAnalytics = cache(async id => {
+  const [orders, user] = await Promise.all([apiGet("/orders/my"), apiGet("/users/me")]);
+
+  const orderList = Array.isArray(orders) ? orders : [];
+  const awaitingPayments = orderList.filter(item => item?.paymentStatus === "PENDING").length;
+  const awaitingShipment = orderList.filter(item => item?.status === "CONFIRMED").length;
+  const awaitingDelivery = orderList.filter(item => item?.status === "PROCESSING").length;
+
   return {
-    balance: 5000,
-    type: "SILVER USER",
-    orderSummary: INFO_LIST
+    balance: 0,
+    type: user?.role || "CUSTOMER",
+    orderSummary: [{
+      title: String(orderList.length),
+      subtitle: "All Orders"
+    }, {
+      title: String(awaitingPayments),
+      subtitle: "Awaiting Payments"
+    }, {
+      title: String(awaitingShipment),
+      subtitle: "Awaiting Shipment"
+    }, {
+      title: String(awaitingDelivery),
+      subtitle: "Awaiting Delivery"
+    }]
   };
 });
 export default {

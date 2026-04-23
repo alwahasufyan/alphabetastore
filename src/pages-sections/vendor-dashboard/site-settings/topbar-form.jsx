@@ -47,9 +47,7 @@ export default function TopbarForm() {
 
   
 // FORM SUBMIT HANDLER
-  const handleSubmitForm = handleSubmit(values => {
-    console.log(values);
-  });
+  const handleSubmitForm = handleSubmit(() => {});
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
       <Grid container spacing={2}>
         <Grid size={12}>

@@ -981,3 +981,36 @@ Best implementation order:
 6. Services working end to end
 
 If a decision does not make the current MVP easier to build or safer to run, postpone it.
+
+## 17. Runtime Verification Snapshot (Updated: 2026-04-23)
+
+This verification was executed against the current codebase before starting any new features.
+
+### Verified and passing
+
+- [x] Backend environment configuration fixed (`DATABASE_URL` and auth env vars present)
+- [x] Prisma migrations applied successfully on PostgreSQL
+- [x] Seed executed successfully (admin account prepared)
+- [x] Backend starts successfully in dev mode with all current modules
+- [x] Frontend production build succeeds without compile errors
+- [x] Authentication API verified end to end:
+  - [x] `POST /auth/register`
+  - [x] `POST /auth/login` (customer)
+  - [x] `GET /auth/me` with access token
+  - [x] Admin login verified with seeded account
+
+### Issues found and fixed during this verification
+
+- [x] Missing backend env file caused migration failure (`DATABASE_URL` not found)
+- [x] Invalid admin email format blocked backend startup by Joi validation
+- [x] Frontend config/type diagnostics fixed in:
+  - [x] `next.config.ts`
+  - [x] `jsconfig.json`
+  - [x] `backend/tsconfig.build.json`
+
+### Remaining before declaring full MVP complete
+
+- [ ] Phase 6 Services module (tables + APIs + frontend integration)
+- [ ] Full removal of old Bazaar mock dependencies under `src/__server__`
+
+Rule enforced: no new feature implementation should start until runtime and auth checks above stay green.

@@ -32,7 +32,6 @@ export default function BannerSlider() {
   const [newFiles, setNewFiles] = useState([]);
   const handleFormSubmit = async e => {
     e.preventDefault();
-    console.log(e);
   };
   const deleteNewImage = name => {
     setNewFiles(state => state.filter(item => item.name !== name));
@@ -40,7 +39,7 @@ export default function BannerSlider() {
   return <form onSubmit={handleFormSubmit} encType="multipart/form-data">
       <Grid container spacing={3}>
         <Grid size={12}>
-          <DropZone onChange={files => console.log(files)} />
+          <DropZone onChange={files => setNewFiles(Array.isArray(files) ? files : [])} />
 
           {/* PREVIEW UPLOAD IMAGES */}
           {newFiles.length > 0 ? <FlexBox gap={1} mt={2}>

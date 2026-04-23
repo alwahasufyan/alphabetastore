@@ -1,8 +1,11 @@
 "use client";
 
 import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // GLOBAL CUSTOM HOOK
 import useCart from "hooks/useCart";
@@ -15,8 +18,21 @@ import CheckoutForm from "../checkout-form";
 export default function CartPageView() {
   const {
     state,
-    dispatch
+    dispatch,
+    ready
   } = useCart();
+
+  if (!ready) {
+    return <Stack alignItems="center" justifyContent="center" py={8}>
+        <CircularProgress color="info" sx={{
+        mb: 2
+      }} />
+        <Typography variant="body2" color="text.secondary">
+          Loading cart...
+        </Typography>
+      </Stack>;
+  }
+
   if (state.cart.length === 0) {
     return <EmptyCart />;
   }

@@ -1,31 +1,74 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
+import { FALLBACK_PRODUCT_IMAGE, fetchProducts } from "utils/catalog";
 
 // CUSTOM DATA MODELS
 
 const getProducts = cache(async () => {
-  const response = await axios.get("/api/fashion-3/products?tag=feature");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(0, 18);
 });
+
 const getBestProducts = cache(async () => {
-  const response = await axios.get("/api/fashion-3/products?tag=best");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(18, 30);
 });
+
 const getMainCarouselData = cache(async () => {
-  const response = await axios.get("/api/fashion-3/main-carousel");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(0, 4).map(item => ({
+    id: item.id,
+    title: item.title || item.name,
+    description: item.shortDescription || item.description || "Discover modern fashion essentials",
+    imgUrl: item.thumbnail || FALLBACK_PRODUCT_IMAGE,
+    buttonText: "Shop Now",
+    buttonLink: `/products/${item.slug}`
+  }));
 });
+
 const getServices = cache(async () => {
-  const response = await axios.get("/api/fashion-3/services");
-  return response.data;
+  return [{
+    id: "service-delivery",
+    icon: "Truck",
+    title: "Fast Delivery",
+    description: "Reliable delivery on every order"
+  }, {
+    id: "service-quality",
+    icon: "Verified",
+    title: "Quality Assured",
+    description: "Carefully selected products"
+  }, {
+    id: "service-support",
+    icon: "CustomerService",
+    title: "Customer Support",
+    description: "Friendly support team"
+  }];
 });
+
 const getBlogs = cache(async () => {
-  const response = await axios.get("/api/fashion-3/blogs");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(0, 3).map(item => ({
+    id: item.id,
+    title: item.title || item.name,
+    createdAt: item.createdAt || "Latest",
+    thumbnail: item.thumbnail || FALLBACK_PRODUCT_IMAGE,
+    description: item.shortDescription || item.description || "Style ideas and shopping inspiration"
+  }));
 });
+
 const getBrands = cache(async () => {
-  const response = await axios.get("/api/fashion-3/brands");
-  return response.data;
+  return [{
+    id: "brand-1",
+    image: "/assets/images/brands/adidas.png"
+  }, {
+    id: "brand-2",
+    image: "/assets/images/brands/gucci.png"
+  }, {
+    id: "brand-3",
+    image: "/assets/images/brands/chanel.png"
+  }, {
+    id: "brand-4",
+    image: "/assets/images/brands/puma.png"
+  }];
 });
 export default {
   getProducts,

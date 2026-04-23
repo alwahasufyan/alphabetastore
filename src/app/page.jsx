@@ -1,13 +1,13 @@
-import IndexPageView from "pages-sections/landing/page-view";
+import { redirect } from "next/navigation";
+
 export const metadata = {
-  title: "Bazaar - Next.js E-commerce Template",
-  description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store",
+  title: "Alphabeta",
+  description: "Alphabeta storefront",
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "ALPHABETA"
   }],
-  keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
+  keywords: ["alphabeta", "e-commerce", "next.js", "react"]
 };
 export default function IndexPage() {
-  return <IndexPageView />;
+  redirect("/market-1");
 }

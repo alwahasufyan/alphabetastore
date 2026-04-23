@@ -60,6 +60,12 @@ export function OrderDetailsPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
+      {!isLoading && !pageError && !order ? <Alert severity="info" sx={{
+      mb: 3
+    }}>
+          Order details are not available.
+        </Alert> : null}
+
       {!isLoading && !pageError && order ? <>
           <OrderProgress status={order.rawStatus} statusLabel={order.statusLabel} />
 

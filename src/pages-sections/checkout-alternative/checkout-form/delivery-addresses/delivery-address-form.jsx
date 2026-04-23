@@ -58,7 +58,6 @@ export default function DeliveryAddressForm({
     e.preventDefault();
     e.stopPropagation();
     handleSubmit(values => {
-      console.log(values);
       handleCloseModal();
       reset();
     })(e);

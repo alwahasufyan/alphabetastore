@@ -29,6 +29,6 @@ export default function ProfilePicUpload({
         <CameraEnhance fontSize="small" />
       </IconButton>
 
-      <Box type="file" display="none" accept="image/*" component="input" id="profile-image" onChange={e => console.log(e.target.files)} />
+      <Box type="file" display="none" accept="image/*" component="input" id="profile-image" onChange={() => {}} />
     </FlexBox>;
 }

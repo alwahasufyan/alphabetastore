@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
@@ -12,11 +11,13 @@ import customThemeOptions from "./theme-options";
 export default function ThemeProvider({
   children
 }) {
-  const pathname = usePathname();
   const {
     settings
   } = useSettings();
-  const themeOptions = customThemeOptions(pathname);
+  const themeOptions = customThemeOptions({
+    themeKey: settings.theme,
+    primaryColor: settings.primary_color
+  });
   const mergedThemeOptions = merge({}, themeOptions, {
     direction: settings.direction
   });

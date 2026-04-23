@@ -1,36 +1,77 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
+import { fetchCategories, fetchProducts, mapCatalogProduct } from "utils/catalog";
+
+function buildSectionCategory(title, children) {
+  return {
+    title,
+    children
+  };
+}
+
+async function getCatalogProducts() {
+  const products = await fetchProducts();
+  return products.map(mapCatalogProduct);
+}
+
 const getProducts = cache(async () => {
-  const response = await axios.get("/api/market-3/products");
-  return response.data;
+  return getCatalogProducts();
 });
 const getServices = cache(async () => {
-  const response = await axios.get("/api/market-3/service");
-  return response.data;
+  return [];
 });
 const getCategories = cache(async () => {
-  const response = await axios.get("/api/market-3/categories");
-  return response.data;
+  const categories = await fetchCategories();
+
+  return categories.map(item => ({
+    id: item.id,
+    name: item.name,
+    image: "/assets/images/market-2/product-1.png",
+    slug: item.slug
+  }));
 });
 const getBrands = cache(async () => {
-  const response = await axios.get("/api/market-3/brand");
-  return response.data;
+  const products = await getCatalogProducts();
+
+  return products.slice(0, 10).map((item, index) => ({
+    id: item.id || index,
+    image: item.thumbnail || "/assets/images/brands/mac.png"
+  }));
 });
 const getMainCarouselData = cache(async () => {
-  const response = await axios.get("/api/market-3/main-carousel");
-  return response.data;
+  const products = await getCatalogProducts();
+
+  return products.slice(0, 3).map(item => ({
+    id: item.id,
+    category: item.category?.name || "Category",
+    title: item.title || item.name,
+    imgUrl: item.thumbnail,
+    description: item.shortDescription || item.description || "",
+    buttonLink: `/products/${item.slug}`
+  }));
 });
 const getElectronicsProducts = cache(async () => {
-  const response = await axios.get("/api/market-3/category-based-product?tag=electronics");
-  return response.data;
+  const products = await getCatalogProducts();
+
+  return {
+    category: buildSectionCategory("Electronics", ["Featured", "Top Deals", "Accessories"]),
+    products: products.slice(0, 10)
+  };
 });
 const getMenFashionProducts = cache(async () => {
-  const response = await axios.get("/api/market-3/category-based-product?tag=men");
-  return response.data;
+  const products = await getCatalogProducts();
+
+  return {
+    category: buildSectionCategory("Men Fashion", ["Apparel", "Shoes", "Accessories"]),
+    products: products.slice(10, 20)
+  };
 });
 const getWomenFashionProducts = cache(async () => {
-  const response = await axios.get("/api/market-3/category-based-product?tag=women");
-  return response.data;
+  const products = await getCatalogProducts();
+
+  return {
+    category: buildSectionCategory("Women Fashion", ["Apparel", "Bags", "Accessories"]),
+    products: products.slice(20, 30)
+  };
 });
 export default {
   getBrands,

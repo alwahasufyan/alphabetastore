@@ -1,12 +1,11 @@
 import { OrderConfirmationPageView } from "pages-sections/order-confirmation";
 export const metadata = {
-  title: "Order Confirmation - Bazaar Next.js E-commerce Template",
-  description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store",
+  title: "Order Confirmation - Alphabeta",
+  description: "Order confirmation and payment status for Alphabeta storefront",
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "ALPHABETA"
   }],
-  keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
+  keywords: ["alphabeta", "order", "confirmation", "next.js"]
 };
 export default function OrderConfirmation() {
   return <OrderConfirmationPageView />;

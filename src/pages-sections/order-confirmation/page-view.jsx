@@ -25,6 +25,7 @@ export default function OrderConfirmationPageView() {
   const [isUploading, setIsUploading] = useState(false);
   const isBankTransfer = paymentMethod === "BANK_TRANSFER";
   const isCod = paymentMethod === "COD";
+  const hasOrderReference = Boolean(orderId);
 
   const handleUploadReceipt = async () => {
     if (!paymentId || !receiptFile) {
@@ -61,6 +62,14 @@ export default function OrderConfirmationPageView() {
           {isBankTransfer ? "Waiting for payment confirmation. Upload your bank transfer receipt below so the admin can review it." : isCod ? "Order placed successfully. Your cash on delivery payment was approved and the order is now confirmed." : "We received your order successfully. Keep your order reference for any follow-up."}
         </Typography>
 
+        {!hasOrderReference ? <Alert severity="warning" sx={{
+        mb: 1,
+        width: "100%",
+        maxWidth: 440
+      }}>
+            This page was opened without an order reference.
+          </Alert> : null}
+
         {orderLabel ? <Typography fontSize={16} variant="body1" color="text.secondary">
             Your order number is <strong>{orderLabel}</strong>.
           </Typography> : null}
@@ -88,7 +97,7 @@ export default function OrderConfirmationPageView() {
             }} />
             </Button>
 
-            <Button variant="contained" color="primary" onClick={handleUploadReceipt} disabled={!receiptFile || isUploading}>
+            <Button variant="contained" color="primary" onClick={handleUploadReceipt} disabled={!receiptFile || isUploading || !paymentId}>
               {isUploading ? "Uploading..." : "Upload Receipt"}
             </Button>
           </Stack> : null}

@@ -62,6 +62,28 @@ async function main() {
       },
     });
   }
+
+  const systemSettingsDefaults = [
+    { key: 'site_name', value: 'Alphabeta' },
+    { key: 'theme', value: 'default' },
+    { key: 'primary_color', value: '#1976d2' },
+    { key: 'enable_whatsapp', value: 'true' },
+  ];
+
+  for (const setting of systemSettingsDefaults) {
+    await prisma.systemSetting.upsert({
+      where: {
+        key: setting.key,
+      },
+      update: {
+        value: setting.value,
+      },
+      create: {
+        key: setting.key,
+        value: setting.value,
+      },
+    });
+  }
 }
 
 

@@ -1,31 +1,47 @@
 import { cache } from "react";
-import axios from "../axiosInstance";
-
-// CUSTOM DATA MODEL
+import { fetchCategories, fetchProductBySlug, fetchProducts } from "utils/catalog";
 
 const getAllProducts = cache(async () => {
-  const response = await axios.get("/api/gadget-3/products");
-  return response.data;
+  return fetchProducts();
 });
 const getAllProductsBySlug = cache(async () => {
-  const response = await axios.get("/api/gadget-3/products-by-slug");
-  return response.data;
+  const products = await fetchProducts();
+
+  return products.map(item => ({
+    params: {
+      slug: item.slug
+    }
+  }));
 });
 const getStories = cache(async () => {
-  const response = await axios.get("/api/gadget-3/stories");
-  return response.data;
+  const products = await fetchProducts();
+
+  return products.slice(0, 8).map(item => ({
+    id: item.id,
+    title: item.title || item.name,
+    imgUrl: item.thumbnail || "/assets/images/products/apple-watch.png"
+  }));
 });
 const getCategories = cache(async () => {
-  const response = await axios.get("/api/gadget-3/categories");
-  return response.data;
+  return fetchCategories();
 });
 const getBreadcrumb = cache(async slug => {
-  const response = await axios.get("/api/gadget-3/breadcrumb", {
-    params: {
-      slug
-    }
-  });
-  return response.data;
+  try {
+    const product = await fetchProductBySlug(slug);
+
+    return [{
+      title: product?.category?.name || "Products",
+      href: "/products/search"
+    }, {
+      title: product?.title || product?.name || "Product",
+      href: `/products/${encodeURIComponent(slug)}`
+    }];
+  } catch {
+    return [{
+      title: "Products",
+      href: "/products/search"
+    }];
+  }
 });
 export default {
   getAllProducts,

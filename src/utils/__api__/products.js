@@ -1,42 +1,36 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
-
-// CUSTOM DATA MODEL
-
+import { fetchProductBySlug, fetchProducts } from "utils/catalog";
 
 // get all product slug
 const getSlugs = cache(async () => {
-  const response = await axios.get("/api/products/slug-list");
-  return response.data;
+  const products = await fetchProducts();
+
+  return products.map(item => ({
+    params: {
+      slug: item.slug
+    }
+  }));
 });
 
 
 // get product based on slug
 const getProduct = cache(async slug => {
-  const response = await axios.get("/api/products/slug", {
-    params: {
-      slug
-    }
-  });
-  return response.data;
+  return fetchProductBySlug(slug);
 });
 
 
 // search products
 const searchProducts = cache(async (name, category) => {
-  const response = await axios.get("/api/products/search", {
-    params: {
-      name,
-      category
-    }
+  return fetchProducts({
+    q: name,
+    category
   });
-  return response.data;
 });
 
 // product reviews
 const getProductReviews = cache(async () => {
-  const response = await axios.get("/api/product/reviews");
-  return response.data;
+  // Reviews are not part of the current MVP backend contract yet.
+  return [];
 });
 export default {
   getSlugs,

@@ -210,7 +210,6 @@ export class PaymentsService {
             code: true,
           },
         },
-        paymentMethodCode: true,
         receipts: {
           orderBy: {
             createdAt: 'desc',

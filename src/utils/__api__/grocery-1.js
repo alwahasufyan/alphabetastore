@@ -1,37 +1,63 @@
 import { cache } from "react";
-import axios from "utils/axiosInstance";
+import { fetchCategories, fetchProducts } from "utils/catalog";
+
+function mapGroceryNavigation(categories) {
+  const allCategories = Array.isArray(categories) ? categories : [];
+  const topLevel = allCategories.filter(item => item?.isActive !== false && !item?.parentId);
+
+  return topLevel.map(parent => {
+    const children = allCategories.filter(item => item?.isActive !== false && item?.parentId === parent.id);
+    const categoryItem = (children.length ? children : [parent]).map(item => ({
+      title: item.name,
+      href: `/grocery-1/${item.slug}`
+    }));
+
+    return {
+      category: parent.name,
+      categoryItem
+    };
+  });
+}
+
 const getGrocery1Navigation = cache(async () => {
-  const response = await axios.get("/api/grocery-1/navigation");
-  return response.data;
+  const categories = await fetchCategories();
+  return mapGroceryNavigation(categories);
 });
+
 const getPopularProducts = cache(async () => {
-  const response = await axios.get("/api/grocery-1/products?tag=popular");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(0, 12);
 });
+
 const getTrendingProducts = cache(async () => {
-  const response = await axios.get("/api/grocery-1/products?tag=trending");
-  return response.data;
+  const products = await fetchProducts();
+  return products.slice(12, 24);
 });
+
 const getProducts = cache(async category => {
-  const response = await axios.get("/api/grocery-1/products", {
-    params: {
-      category
-    }
-  });
-  return response.data;
+  return fetchProducts(category ? {
+    category
+  } : {});
 });
+
 const getServices = cache(async () => {
-  const response = await axios.get("/api/grocery-1/services");
-  return response.data;
+  return [];
 });
+
 const getCategory = cache(async category => {
-  const response = await axios.get("/api/grocery-1/category", {
-    params: {
-      category
-    }
-  });
-  return response.data;
+  const categories = await fetchCategories();
+  const matchedCategory = (Array.isArray(categories) ? categories : []).find(item => item?.slug === category);
+
+  if (!matchedCategory) {
+    return null;
+  }
+
+  return {
+    title: matchedCategory.name,
+    slug: matchedCategory.slug
+  };
 });
+
 export default {
   getCategory,
   getServices,
