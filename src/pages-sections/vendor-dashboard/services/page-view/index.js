@@ -1,0 +1,1 @@
+export { AdminServicesPageView } from "./services";

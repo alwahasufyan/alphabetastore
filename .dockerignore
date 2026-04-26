@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.gitignore
+backend/node_modules
+backend/dist
+backend/.git
+backend/uploads
+*.log
+Dockerfile
+frontend/.env.docker
+backend/.env
+backend/.env.docker

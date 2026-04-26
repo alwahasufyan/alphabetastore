@@ -25,8 +25,8 @@ import usePasswordVisible from "../use-password-visible";
 
 // LOGIN FORM FIELD VALIDATION SCHEMA
 const validationSchema = yup.object().shape({
-  password: yup.string().required("Password is required"),
-  email: yup.string().email("Invalid Email Address").required("Email is required")
+  password: yup.string().min(8, "Password must be at least 8 characters").max(72, "Password is too long").required("Password is required"),
+  email: yup.string().trim().email("Invalid Email Address").required("Email is required")
 });
 export default function LoginPageView() {
   const router = useRouter();
@@ -55,7 +55,10 @@ export default function LoginPageView() {
     setErrorMessage("");
 
     try {
-      const response = await apiPost("/auth/login", values);
+      const response = await apiPost("/auth/login", {
+        email: values.email.trim().toLowerCase(),
+        password: values.password
+      });
 
       saveTokens(response.accessToken, response.refreshToken);
       clearCartSession();

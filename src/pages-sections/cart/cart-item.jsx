@@ -21,6 +21,7 @@ export default function CartItem({
 }) {
   const {
     id,
+    productId,
     title,
     price,
     thumbnail,
@@ -35,6 +36,7 @@ export default function CartItem({
       type: "CHANGE_CART_AMOUNT",
       payload: {
         id,
+        productId,
         title,
         price,
         thumbnail,

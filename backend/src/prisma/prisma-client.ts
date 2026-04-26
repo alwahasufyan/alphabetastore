@@ -10,6 +10,7 @@ export const PaymentTransactionStatus = prismaClient.PaymentTransactionStatus;
 export const ProductStatus = prismaClient.ProductStatus;
 export const ReceiptReviewStatus = prismaClient.ReceiptReviewStatus;
 export const Role = prismaClient.Role;
+export const ServiceRequestStatus = prismaClient.ServiceRequestStatus;
 export const TicketPriority = prismaClient.TicketPriority;
 export const TicketStatus = prismaClient.TicketStatus;
 export const UserStatus = prismaClient.UserStatus;

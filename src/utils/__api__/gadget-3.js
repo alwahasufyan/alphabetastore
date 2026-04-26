@@ -5,13 +5,7 @@ const getAllProducts = cache(async () => {
   return fetchProducts();
 });
 const getAllProductsBySlug = cache(async () => {
-  const products = await fetchProducts();
-
-  return products.map(item => ({
-    params: {
-      slug: item.slug
-    }
-  }));
+  return fetchProducts();
 });
 const getStories = cache(async () => {
   const products = await fetchProducts();
@@ -19,11 +13,18 @@ const getStories = cache(async () => {
   return products.slice(0, 8).map(item => ({
     id: item.id,
     title: item.title || item.name,
-    imgUrl: item.thumbnail || "/assets/images/products/apple-watch.png"
+    image: item.thumbnail || "/assets/images/products/apple-watch.png",
+    imageBig: item.thumbnail || "/assets/images/products/apple-watch.png",
+    url: item.slug ? `/products/${encodeURIComponent(item.slug)}` : "/products/search"
   }));
 });
 const getCategories = cache(async () => {
-  return fetchCategories();
+  const categories = await fetchCategories();
+
+  return categories.map(item => ({
+    name: item?.name || "Category",
+    path: item?.slug ? `/gadget-3/categories/${encodeURIComponent(item.slug)}` : "/products/search"
+  }));
 });
 const getBreadcrumb = cache(async slug => {
   try {

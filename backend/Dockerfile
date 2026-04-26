@@ -1,0 +1,17 @@
+FROM node:20-bookworm-slim
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+
+RUN npm run prisma:generate
+RUN npm run build
+
+EXPOSE 3001
+
+CMD ["sh", "-c", "npm run prisma:migrate:deploy && npm run start:prod"]

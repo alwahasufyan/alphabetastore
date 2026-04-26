@@ -9,6 +9,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
+import { ServicesModule } from './services/services.module';
 import { SettingsModule } from './settings/settings.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { UsersModule } from './users/users.module';
@@ -26,6 +27,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     AuthModule,
     CategoriesModule,
     ProductsModule,
+    ServicesModule,
     CartModule,
     OrdersModule,
     PaymentsModule,

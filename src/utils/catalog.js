@@ -58,19 +58,52 @@ function buildCatalogQueryString(filters = {}) {
   return queryString ? `?${queryString}` : "";
 }
 
-async function fetchCatalog(path, fallbackMessage) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    cache: "no-store"
-  });
-
-  const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
-
-  if (!response.ok) {
-    throw new Error(fallbackMessage);
+function unwrapEnvelope(payload) {
+  if (payload && typeof payload === "object" && payload.success === true && "data" in payload) {
+    return payload.data;
   }
 
-  return data;
+  return payload;
+}
+
+function readEnvelopeErrorMessage(payload, fallbackMessage) {
+  if (payload && typeof payload === "object" && payload.success === false && "message" in payload) {
+    const message = payload.message;
+
+    if (typeof message === "string") {
+      return message;
+    }
+
+    if (Array.isArray(message)) {
+      return message.join(", ");
+    }
+  }
+
+  return fallbackMessage;
+}
+
+async function fetchCatalog(path, fallbackMessage, fallbackData) {
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      cache: "no-store"
+    });
+
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+
+    if (!response.ok) {
+      throw new Error(readEnvelopeErrorMessage(data, fallbackMessage));
+    }
+
+    return unwrapEnvelope(data);
+  } catch (error) {
+    // Keep static build resilient when backend is temporarily unavailable.
+    if (typeof window === "undefined") {
+      return fallbackData;
+    }
+
+    throw error instanceof Error ? error : new Error(fallbackMessage);
+  }
 }
 
 function normalizeCategories(categories) {
@@ -86,16 +119,16 @@ function createCategoryHref(slug) {
 }
 
 export async function fetchCategories() {
-  return fetchCatalog("/categories", "Failed to load categories");
+  return fetchCatalog("/categories", "Failed to load categories", []);
 }
 
 export async function fetchProducts(filters = {}) {
-  const products = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products");
+  const products = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products", []);
   return Array.isArray(products) ? products.map(mapCatalogProduct) : [];
 }
 
 export async function fetchProductBySlug(slug) {
-  const product = await fetchCatalog(`/products/${encodeURIComponent(slug)}`, "Failed to load products");
+  const product = await fetchCatalog(`/products/${encodeURIComponent(slug)}`, "Failed to load products", null);
   return mapCatalogProduct(product);
 }
 

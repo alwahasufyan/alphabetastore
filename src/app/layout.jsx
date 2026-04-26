@@ -1,5 +1,9 @@
 import { Geist } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const geist = Geist({
   subsets: ["latin"]
 });
@@ -37,7 +41,7 @@ export default function RootLayout({
   children,
   modal
 }) {
-  return <html lang="en" suppressHydrationWarning>
+  return <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body id="body" className={geist.className}>
         <AuthProvider>
           <CartProvider>

@@ -6,7 +6,6 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
 import Typography from "@mui/material/Typography";
 
 // GLOBAL CUSTOM HOOK
@@ -15,18 +14,11 @@ import useCart from "hooks/useCart";
 // GLOBAL CUSTOM COMPONENTS
 import { FlexBetween, FlexBox } from "components/flex-box";
 
-// DUMMY CUSTOM DATA
-import countryList from "data/countryList";
+import { LIBYAN_CITIES } from "utils/libya";
 
 // CUSTOM UTILS LIBRARY FUNCTION
 import { currency } from "lib";
-const STATE_LIST = [{
-  value: "new-york",
-  label: "New York"
-}, {
-  value: "chicago",
-  label: "Chicago"
-}];
+
 export default function CheckoutForm() {
   const {
     state
@@ -91,24 +83,20 @@ export default function CheckoutForm() {
       </Typography>
 
       {/* COUNTRY TEXT FIELD */}
-      <Autocomplete fullWidth sx={{
+      <TextField fullWidth size="small" label="Country" value="Libya" variant="outlined" slotProps={{
+      input: {
+        readOnly: true
+      }
+    }} sx={{
       mb: 2
-    }} options={countryList} renderInput={params => <TextField {...params} size="small" label="Country" variant="outlined" placeholder="Select Country" />} />
+    }} />
 
       {/* STATE/CITY TEXT FIELD */}
-      <TextField select fullWidth size="small" label="State" variant="outlined" placeholder="Select State" defaultValue="new-york">
-        {STATE_LIST.map(({
-        label,
-        value
-      }) => <MenuItem value={value} key={label}>
-            {label}
+      <TextField select fullWidth size="small" label="City" variant="outlined" defaultValue={LIBYAN_CITIES[0] || ""}>
+        {LIBYAN_CITIES.map(city => <MenuItem value={city} key={city}>
+            {city}
           </MenuItem>)}
       </TextField>
-
-      {/* ZIP-CODE TEXT FIELD */}
-      <TextField fullWidth size="small" label="Zip Code" placeholder="3100" variant="outlined" sx={{
-      mt: 2
-    }} />
 
       <Button variant="outlined" color="primary" fullWidth sx={{
       my: 2

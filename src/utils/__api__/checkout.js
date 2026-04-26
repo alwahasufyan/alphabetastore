@@ -1,35 +1,6 @@
 import { cache } from "react";
-const DUMMY_ADDRESS_LIST = [{
-  id: 1,
-  name: "Home",
-  phone: "+17804084466",
-  street2: "435 Bristol, MA 2351",
-  street1: "375 Subidbazaar, MA 2351",
-  city: "Sylhet",
-  state: "Sylhet",
-  country: "Bangladesh",
-  zip: "4336"
-}, {
-  id: 2,
-  name: "Office",
-  phone: "+18334271710",
-  street2: "968 Brockton, MA 2351",
-  street1: "645 Bondorbazaar, MA 2351",
-  city: "Sylhet",
-  state: "Sylhet",
-  country: "Bangladesh",
-  zip: "4336"
-}, {
-  id: 3,
-  name: "Office 2",
-  phone: "+17754739407",
-  street2: "777 Kazi, MA 2351",
-  street1: "324 Ambarkhana, MA 2351",
-  city: "Sylhet",
-  state: "Sylhet",
-  country: "Bangladesh",
-  zip: "4336"
-}];
+import { deleteMyAddress, fetchMyAddresses } from "utils/addresses";
+
 const TIMES = [{
   label: "9AM - 11AM",
   value: "9AM - 11AM"
@@ -43,28 +14,40 @@ const TIMES = [{
   label: "5PM - 7PM",
   value: "5PM - 7PM"
 }];
-const CARD_LIST = [{
-  cardType: "Amex",
-  last4Digits: "4765",
-  name: "Jaslynn Land"
-}, {
-  cardType: "Mastercard",
-  last4Digits: "5432",
-  name: "Jaslynn Land"
-}, {
-  cardType: "Visa",
-  last4Digits: "4543",
-  name: "Jaslynn Land"
-}];
+function mapAddress(address) {
+  return {
+    id: address.id,
+    name: address.label || "Address",
+    phone: address.phone,
+    street1: address.addressLine,
+    street2: address.city,
+    city: address.city,
+    state: "",
+    country: "",
+    zip: ""
+  };
+}
+
 export const getAddresses = cache(async () => {
-  return DUMMY_ADDRESS_LIST;
+  try {
+    const addresses = await fetchMyAddresses();
+    return Array.isArray(addresses) ? addresses.map(mapAddress) : [];
+  } catch {
+    return [];
+  }
 });
 export const deleteAddress = cache(async id => {
-  return DUMMY_ADDRESS_LIST.filter(item => item.id !== id);
+  try {
+    await deleteMyAddress(String(id));
+  } catch {
+    // Keep this legacy wrapper resilient for compatibility.
+  }
+
+  return getAddresses();
 });
 export const getDeliveryTimes = cache(async () => {
   return TIMES;
 });
 export const getCards = cache(async () => {
-  return CARD_LIST;
+  return [];
 });

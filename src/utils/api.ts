@@ -14,11 +14,46 @@ type RequestOptions = {
   retryOnUnauthorized?: boolean;
 };
 
+type SuccessEnvelope<T> = {
+  success: true;
+  data: T;
+};
+
+type ErrorEnvelope = {
+  success: false;
+  errorCode?: string;
+  message?: string | string[];
+};
+
+type ApiEnvelope<T> = SuccessEnvelope<T> | ErrorEnvelope;
+
 let refreshRequest: Promise<string | null> | null = null;
+
+function isApiEnvelope(payload: unknown): payload is ApiEnvelope<unknown> {
+  return !!payload && typeof payload === "object" && "success" in payload;
+}
+
+function unwrapSuccessData<T>(payload: unknown): T | unknown {
+  if (isApiEnvelope(payload) && payload.success) {
+    return payload.data;
+  }
+
+  return payload;
+}
 
 function getErrorMessage(payload: unknown, fallback: string) {
   if (typeof payload === "string") {
     return payload;
+  }
+
+  if (isApiEnvelope(payload) && !payload.success) {
+    if (typeof payload.message === "string") {
+      return payload.message;
+    }
+
+    if (Array.isArray(payload.message)) {
+      return payload.message.join(", ");
+    }
   }
 
   if (payload && typeof payload === "object" && "message" in payload) {
@@ -34,6 +69,19 @@ function getErrorMessage(payload: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+function getErrorCode(payload: unknown) {
+  if (isApiEnvelope(payload) && !payload.success && typeof payload.errorCode === "string") {
+    return payload.errorCode;
+  }
+
+  if (payload && typeof payload === "object" && "errorCode" in payload) {
+    const errorCode = (payload as { errorCode?: unknown }).errorCode;
+    return typeof errorCode === "string" ? errorCode : undefined;
+  }
+
+  return undefined;
 }
 
 function isFormData(value: unknown): value is FormData {
@@ -61,7 +109,16 @@ function buildHeaders(method: ApiMethod, token?: string | null, body?: unknown) 
 
 async function parseJsonResponse(response: Response) {
   const text = await response.text();
-  return text ? JSON.parse(text) : null;
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 }
 
 async function refreshAccessToken() {
@@ -84,13 +141,17 @@ async function refreshAccessToken() {
 
       const data = await parseJsonResponse(response);
 
-      if (!response.ok || !data?.accessToken) {
+      const normalizedData = unwrapSuccessData<{ accessToken?: string }>(data) as {
+        accessToken?: string;
+      } | null;
+
+      if (!response.ok || !normalizedData?.accessToken) {
         clearTokens();
         return null;
       }
 
-      saveAccessToken(data.accessToken);
-      return data.accessToken;
+      saveAccessToken(normalizedData.accessToken);
+      return normalizedData.accessToken;
     })().finally(() => {
       refreshRequest = null;
     });
@@ -131,10 +192,16 @@ export async function apiRequest(path: string, options: RequestOptions = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(getErrorMessage(data, "Request failed"));
+    const error = new Error(getErrorMessage(data, "Request failed")) as Error & {
+      code?: string;
+      status?: number;
+    };
+    error.code = getErrorCode(data);
+    error.status = response.status;
+    throw error;
   }
 
-  return data;
+  return unwrapSuccessData(data);
 }
 
 export function apiGet(path: string) {

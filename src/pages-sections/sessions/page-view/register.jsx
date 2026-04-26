@@ -28,9 +28,9 @@ import FlexBox from "components/flex-box/flex-box";
 
 // REGISTER FORM FIELD VALIDATION SCHEMA
 const validationSchema = yup.object().shape({
-  name: yup.string().required("Name is required"),
-  email: yup.string().email("Invalid Email Address").required("Email is required"),
-  password: yup.string().required("Password is required"),
+  name: yup.string().trim().min(2, "Name must be at least 2 characters").max(80, "Name is too long").required("Name is required"),
+  email: yup.string().trim().email("Invalid Email Address").required("Email is required"),
+  password: yup.string().min(8, "Password must be at least 8 characters").max(72, "Password is too long").required("Password is required"),
   re_password: yup.string().oneOf([yup.ref("password")], "Passwords must match").required("Please re-type password"),
   agreement: yup.bool().test("agreement", "You have to agree with our Terms and Conditions!", value => value === true).required("You have to agree with our Terms and Conditions!")
 });

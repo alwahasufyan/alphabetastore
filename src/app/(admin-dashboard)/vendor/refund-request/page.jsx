@@ -21,6 +21,11 @@ async function getRefundRequests() {
     }
 
     const data = await response.json();
+
+    if (data?.success === true) {
+      return Array.isArray(data.data) ? data.data : [];
+    }
+
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
