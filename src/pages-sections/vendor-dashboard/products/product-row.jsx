@@ -10,7 +10,7 @@ import Delete from "@mui/icons-material/Delete";
 
 // GLOBAL CUSTOM COMPONENTS
 import FlexBox from "components/flex-box/flex-box";
-import BazaarSwitch from "components/BazaarSwitch";
+import AppSwitch from "components/AppSwitch";
 import { deleteAdminProduct, updateAdminProductStatus } from "utils/admin-catalog";
 
 // CUSTOM UTILS LIBRARY FUNCTION
@@ -109,7 +109,7 @@ export default function ProductRow({
 
       <StyledTableCell align="left">
         <FlexBox alignItems="center" gap={1}>
-          <BazaarSwitch color="info" checked={productActive} onChange={handleToggleActive} />
+          <AppSwitch color="info" checked={productActive} onChange={handleToggleActive} />
 
           <Typography variant="body2">{productActive ? "Active" : status || "Inactive"}</Typography>
         </FlexBox>

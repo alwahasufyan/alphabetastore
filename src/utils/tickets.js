@@ -38,7 +38,7 @@ function mapTicketMessage(message) {
     date: message?.createdAt || null,
     sender: message?.sender ? {
       id: message.sender.id || "",
-      name: message.sender.name || "User",
+      name: message.sender.name || "",
       email: message.sender.email || "",
       role: message.sender.role || "CUSTOMER"
     } : null
@@ -51,7 +51,7 @@ export function mapTicket(ticket) {
   return {
     id: ticket?.id || "",
     ticketNumber: ticket?.ticketNumber || "",
-    subject: ticket?.subject || "Support ticket",
+    subject: ticket?.subject || "",
     status: ticket?.status || "OPEN",
     statusLabel: formatTicketStatus(ticket?.status),
     priority: ticket?.priority || "NORMAL",
@@ -59,7 +59,7 @@ export function mapTicket(ticket) {
     createdAt: ticket?.createdAt || null,
     customer: ticket?.user ? {
       id: ticket.user.id || "",
-      name: ticket.user.name || "Customer",
+      name: ticket.user.name || "",
       email: ticket.user.email || "",
       role: ticket.user.role || "CUSTOMER"
     } : null,

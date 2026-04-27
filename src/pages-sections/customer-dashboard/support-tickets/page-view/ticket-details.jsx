@@ -86,7 +86,7 @@ export function TicketDetailsPageView({
         }} spacing={2} justifyContent="space-between">
               <div>
                 <Typography variant="h6">{ticket.ticketNumber}</Typography>
-                <Typography color="text.secondary">{ticket.customer?.name || "Customer"}</Typography>
+                <Typography color="text.secondary">{ticket.customer?.name || "-"}</Typography>
               </div>
 
               <Stack direction="row" spacing={1} flexWrap="wrap">

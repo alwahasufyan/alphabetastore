@@ -39,16 +39,23 @@ const StyledSelect = styled(Select)(({
     paddingRight: "8px !important"
   }
 }));
-const series = [{
-  name: "Sales",
-  data: [15000, 45000, 12000, 50000, 75000, 33000, 30000, 99000, 75000, 90000, 55000, 15000]
-}, {
-  name: "Expense",
-  data: [11500, 48000, 19000, 59000, 25000, 39000, 36000, 49000, 79000, 70000, 57000, 15000]
-}];
-export default function Analytics() {
+export default function Analytics({
+  monthly = []
+}) {
   const theme = useTheme();
   const [selectType, setSelectType] = useState("yearly");
+
+  const salesData = categories.map((_, index) => Number(monthly[index]?.salesUsd || 0));
+  const ordersData = categories.map((_, index) => Number(monthly[index]?.orderCount || 0));
+
+  const series = [{
+    name: "Sales",
+    data: salesData
+  }, {
+    name: "Orders",
+    data: ordersData
+  }];
+
   return <Card sx={{
     p: 3
   }}>

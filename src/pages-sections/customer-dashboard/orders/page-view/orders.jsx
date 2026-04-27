@@ -59,7 +59,7 @@ export function OrdersPageView({
   }, [currentPage, orders]);
 
   return <Fragment>
-      <DashboardHeader Icon={Packages} title="My Orders" />
+      <DashboardHeader Icon={Packages} title="طلباتي" />
 
       {pageError ? <Alert severity="error" sx={{
       mb: 3
@@ -69,7 +69,7 @@ export function OrdersPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
-      {!isLoading && !pageError && paginatedOrders.length === 0 ? <Alert severity="info">No orders found yet.</Alert> : null}
+      {!isLoading && !pageError && paginatedOrders.length === 0 ? <Alert severity="info">لا توجد طلبات حتى الآن.</Alert> : null}
 
       {!isLoading && !pageError ? paginatedOrders.map(order => <OrderRow order={order} key={order.id} />) : null}
 

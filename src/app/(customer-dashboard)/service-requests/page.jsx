@@ -4,10 +4,11 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "Service Requests - Bazaar Next.js E-commerce Template",
-  description: "Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store"
+  title: "Service Requests - Alphabeta Store",
+  description: "Alphabeta Store for the Libya market."
 };
 
 export default function ServiceRequestsPage() {
   return <ServiceRequestsPageView />;
 }
+

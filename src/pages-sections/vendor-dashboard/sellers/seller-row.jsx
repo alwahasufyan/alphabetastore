@@ -10,7 +10,7 @@ import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 
 // GLOBAL CUSTOM COMPONENTS
 import FlexBox from "components/flex-box/flex-box";
-import BazaarSwitch from "components/BazaarSwitch";
+import AppSwitch from "components/AppSwitch";
 
 // CUSTOM UTILS LIBRARY FUNCTION
 import { currency } from "lib";
@@ -72,7 +72,7 @@ export default function SellerRow({
       </StyledTableCell>
 
       <StyledTableCell align="left">
-        <BazaarSwitch color="info" checked={shopPublish} onChange={() => setShopPublish(state => !state)} />
+        <AppSwitch color="info" checked={shopPublish} onChange={() => setShopPublish(state => !state)} />
       </StyledTableCell>
 
       <StyledTableCell align="center">

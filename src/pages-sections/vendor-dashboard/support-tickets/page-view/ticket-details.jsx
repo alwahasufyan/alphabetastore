@@ -94,7 +94,7 @@ export default function TicketDetailsPageView({
           }} justifyContent="space-between" spacing={2}>
                 <div>
                   <Typography variant="h5">{ticket.ticketNumber}</Typography>
-                  <Typography color="text.secondary">{ticket.customer?.name || "Customer"}</Typography>
+                  <Typography color="text.secondary">{ticket.customer?.name || "-"}</Typography>
                   <Typography color="text.secondary">{ticket.customer?.email || ""}</Typography>
                 </div>
 

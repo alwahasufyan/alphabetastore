@@ -50,8 +50,8 @@ export default function Footer() {
           mx: "0.5rem"
         }} /> & Care
           by &nbsp;{" "}
-          <a href="https://ui-lib.com" target="_blank" rel="noreferrer noopener" aria-label="Visit UI Lib website">
-            UI Lib
+          <a href="https://alphabeta.com" target="_blank" rel="noreferrer noopener" aria-label="Visit Alphabeta Store website">
+            Alphabeta Store
           </a>
         </Box>
 
@@ -68,3 +68,4 @@ export default function Footer() {
       </Container>
     </Box>;
 }
+

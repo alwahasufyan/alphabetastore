@@ -136,7 +136,7 @@ export default function ShopLayout1({
             fontWeight: 500
           }
         }}>
-            &copy; Copyright {new Date().getFullYear()} <span>UI Lib</span>, All rights reserved.
+            &copy; Copyright {new Date().getFullYear()} <span>Alphabeta Store</span>, All rights reserved.
           </Typography>
         </Footer1.Copyright>
       </Footer1>

@@ -36,7 +36,7 @@ const productInclude = {
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(query: FindProductsQueryDto = {}) {
+  async findAll(query: FindProductsQueryDto = {}) {
     const searchTerm = query.q?.trim() || query.search?.trim();
     const categoryFilter = query.category?.trim();
     const whereClauses: Prisma.ProductWhereInput[] = [];
@@ -48,6 +48,7 @@ export class ProductsService {
     }
 
     if (categoryFilter) {
+      const categoryIds = await this.resolveCategoryIds(categoryFilter);
       const categoryConditions: Prisma.ProductWhereInput[] = [
         {
           category: {
@@ -55,6 +56,14 @@ export class ProductsService {
           },
         },
       ];
+
+      if (categoryIds.length) {
+        categoryConditions.unshift({
+          categoryId: {
+            in: categoryIds,
+          },
+        });
+      }
 
       if (UUID_PATTERN.test(categoryFilter)) {
         categoryConditions.unshift({
@@ -111,12 +120,93 @@ export class ProductsService {
     }
 
     const where = whereClauses.length ? { AND: whereClauses } : undefined;
+    const hasPagination = Boolean(query.page || query.limit);
 
-    return this.prisma.product.findMany({
-      where,
-      include: productInclude,
-      orderBy: this.buildOrderBy(query.sort),
+    if (!hasPagination) {
+      return this.prisma.product.findMany({
+        where,
+        include: productInclude,
+        orderBy: this.buildOrderBy(query.sort),
+      });
+    }
+
+    const page = Math.max(Number(query.page) || 1, 1);
+    const limit = Math.min(Math.max(Number(query.limit) || 12, 1), 100);
+
+    return this.findPaginated(where, page, limit, query.sort);
+  }
+
+  private async findPaginated(
+    where: Prisma.ProductWhereInput | undefined,
+    page: number,
+    limit: number,
+    sort: FindProductsQueryDto['sort'],
+  ) {
+    const [items, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: productInclude,
+        orderBy: this.buildOrderBy(sort),
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    };
+  }
+
+  private async resolveCategoryIds(categoryFilter: string) {
+    const rootCategory = await this.prisma.category.findFirst({
+      where: UUID_PATTERN.test(categoryFilter)
+        ? {
+            OR: [{ id: categoryFilter }, { slug: categoryFilter }],
+          }
+        : {
+            slug: categoryFilter,
+          },
+      select: {
+        id: true,
+      },
     });
+
+    if (!rootCategory) {
+      return [];
+    }
+
+    const categoryIds = new Set<string>([rootCategory.id]);
+    let parentIds = [rootCategory.id];
+
+    while (parentIds.length) {
+      const children = await this.prisma.category.findMany({
+        where: {
+          parentId: {
+            in: parentIds,
+          },
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      parentIds = children
+        .map((category: { id: string }) => category.id)
+        .filter((id: string) => !categoryIds.has(id));
+
+      for (const id of parentIds) {
+        categoryIds.add(id);
+      }
+    }
+
+    return [...categoryIds];
   }
 
   async findOneBySlug(slug: string) {

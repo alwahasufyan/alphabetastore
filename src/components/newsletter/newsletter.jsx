@@ -80,7 +80,7 @@ export default function Newsletter({
                   color: "primary.main"
                 }
               }}>
-                  Sign up to <span>BAZAAR</span>
+                  Sign up to <span>ALPHABETA STORE</span>
                 </Typography>
 
                 <Typography variant="body1" sx={{

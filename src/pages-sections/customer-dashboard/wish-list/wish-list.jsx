@@ -68,7 +68,7 @@ export default function WishListPageView({
   }, [currentPage, items]);
 
   return <Fragment>
-      <DashboardHeader title="My Wish List" Icon={Favorite} />
+      <DashboardHeader title="قائمة المفضلة" Icon={Favorite} />
 
       {pageError ? <Alert severity="error" sx={{
       mb: 3
@@ -78,7 +78,7 @@ export default function WishListPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
-      {!isLoading && !pageError && paginatedItems.length === 0 ? <Alert severity="info">Your wishlist is empty.</Alert> : null}
+      {!isLoading && !pageError && paginatedItems.length === 0 ? <Alert severity="info">قائمة المفضلة فارغة حاليًا.</Alert> : null}
 
       <Grid container spacing={3}>
         {!isLoading && !pageError ? paginatedItems.map(item => <Grid size={{

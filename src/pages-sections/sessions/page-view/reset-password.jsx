@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -9,6 +9,7 @@ import * as yup from "yup";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
 
 // GLOBAL CUSTOM COMPONENTS
 import { TextField, FormProvider } from "components/form-hook";
@@ -23,6 +24,7 @@ const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required")
 });
 export default function ResetPassword() {
+  const [notice, setNotice] = useState("");
   const methods = useForm({
     defaultValues: {
       email: ""
@@ -35,33 +37,37 @@ export default function ResetPassword() {
       isSubmitting
     }
   } = methods;
-  const handleSubmitForm = handleSubmit(values => {
-    alert(JSON.stringify(values, null, 2));
+  const handleSubmitForm = handleSubmit(() => {
+    setNotice("ميزة إعادة التعيين عبر البريد غير مفعلة حاليًا. تواصل مع الدعم الفني.");
   });
   return <Fragment>
       <Typography variant="h3" fontWeight={700} sx={{
       mb: 4,
       textAlign: "center"
     }}>
-        Reset your password
+        استعادة كلمة المرور
       </Typography>
+
+      {notice ? <Alert severity="info" sx={{
+      mb: 3
+    }}>{notice}</Alert> : null}
 
       <FormProvider methods={methods} onSubmit={handleSubmitForm}>
         <Stack spacing={3}>
-          <TextField fullWidth name="email" type="email" label="Email" size="medium" placeholder="exmple@mail.com" />
+          <TextField fullWidth name="email" type="email" label="البريد الإلكتروني" size="medium" placeholder="you@example.com" />
 
           <Button fullWidth size="large" type="submit" color="primary" variant="contained" loading={isSubmitting}>
-            Reset
+            إرسال الطلب
           </Button>
         </Stack>
       </FormProvider>
 
       <FlexRowCenter mt={3} justifyContent="center" gap={1}>
         <Typography variant="body1" color="text.secondary">
-          Don&apos;t have an account?
+          ليس لديك حساب؟
         </Typography>
 
-        <BoxLink title="Register" href="/register" />
+        <BoxLink title="إنشاء حساب" href="/register" />
       </FlexRowCenter>
     </Fragment>;
 }

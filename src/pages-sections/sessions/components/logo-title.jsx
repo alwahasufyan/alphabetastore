@@ -8,9 +8,9 @@ import FlexRowCenter from "components/flex-box/flex-row-center";
 import logo from "../../../../public/assets/images/logo2.svg";
 export default function LogoWithTitle() {
   return <FlexRowCenter flexDirection="column" gap={2} mb={4}>
-      <Image width={90} src={logo} alt="Bazaar Ecommerce Template" />
+      <Image width={90} src={logo} alt="Alphabeta Store" />
       <Typography fontWeight={600} variant="h5">
-        Welcome To Bazaar
+        Welcome to Alphabeta Store
       </Typography>
     </FlexRowCenter>;
 }

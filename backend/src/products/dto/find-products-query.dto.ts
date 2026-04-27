@@ -1,4 +1,13 @@
-import { IsEnum, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  MinLength,
+} from 'class-validator';
 
 import { ProductStatus } from '../../prisma/prisma-client';
 
@@ -27,4 +36,15 @@ export class FindProductsQueryDto {
   @IsOptional()
   @IsIn(PRODUCT_SORT_VALUES)
   sort?: (typeof PRODUCT_SORT_VALUES)[number];
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  page?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number;
 }

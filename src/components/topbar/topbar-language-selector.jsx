@@ -4,7 +4,8 @@ import MenuItem from "@mui/material/MenuItem";
 import TouchRipple from "@mui/material/ButtonBase";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import { useTranslation } from "react-i18next";
-import BazaarMenu from "components/BazaarMenu";
+import AppMenu from "components/AppMenu";
+import useSettings from "hooks/useSettings";
 
 
 // ==============================================================
@@ -18,9 +19,17 @@ export function TopbarLanguageSelector({
   const {
     i18n
   } = useTranslation();
+  const {
+    settings,
+    updateSettings
+  } = useSettings();
 
   const normalizedLanguages = (() => {
     const fallbackLanguage = {
+      ar: {
+        title: "AR",
+        value: "ar"
+      },
       en: {
         title: "EN",
         value: "en"
@@ -73,15 +82,23 @@ export function TopbarLanguageSelector({
   })();
 
   const languageCodes = Object.keys(normalizedLanguages);
-  const resolvedLanguage = String(i18n.resolvedLanguage || i18n.language || "en").toLowerCase();
+  const resolvedLanguage = String(i18n.resolvedLanguage || i18n.language || settings.default_language || "ar").toLowerCase();
   const baseLanguage = resolvedLanguage.split("-")[0];
   const selectedLanguage = normalizedLanguages[resolvedLanguage] || normalizedLanguages[baseLanguage] || normalizedLanguages[languageCodes[0]];
 
   const handleChangeLanguage = lang => {
     i18n.changeLanguage(lang);
+    updateSettings({
+      default_language: lang,
+      direction: lang === "ar" ? "rtl" : "ltr"
+    });
+
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("alphabeta_locale", lang);
+    }
   };
 
-  return <BazaarMenu handler={e => <TouchRipple onClick={e} sx={{
+  return <AppMenu handler={e => <TouchRipple onClick={e} sx={{
     svg: {
       fontSize: 16
     },

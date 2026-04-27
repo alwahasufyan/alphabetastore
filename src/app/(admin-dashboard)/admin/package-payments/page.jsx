@@ -1,17 +1,13 @@
-import { PackagePaymentPageView } from "pages-sections/vendor-dashboard/package-payments/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
-  title: "Package Payments - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Package Payments - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function PackagePayments() {
-  const payments = await api.packagePayments();
-  return <PackagePaymentPageView payments={payments} />;
+  return <FeatureUnavailablePage title="Package Payments" description="مدفوعات الباقات غير متاحة حاليًا لأن هذه الميزة ما زالت بقايا من القالب ولا تملك API حقيقي في المنصة." />;
 }

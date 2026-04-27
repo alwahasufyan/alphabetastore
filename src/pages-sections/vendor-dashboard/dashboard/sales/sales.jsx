@@ -19,17 +19,31 @@ const ApexChart = dynamic(() => import("react-apexcharts"), {
 });
 
 
-// weekly chart series
-const series = [{
-  name: "Weekly",
-  data: [7600, 8500, 10100, 9800, 8700, 1050, 9100]
-}];
-const totalOrderSeries = [{
-  name: "Weekly",
-  data: [7600, 8500, 10100, 9800, 8700, 1050, 9100]
-}];
-export default function Sales() {
+export default function Sales({
+  totals,
+  monthly
+}) {
   const theme = useTheme();
+  const monthlySales = Array.isArray(monthly) ? monthly.map(item => Number(item?.salesUsd || 0)) : [];
+  const monthlyOrders = Array.isArray(monthly) ? monthly.map(item => Number(item?.orderCount || 0)) : [];
+
+  const totalRevenue = Number(totals?.totalRevenueUsd || 0);
+  const totalOrders = Number(totals?.totalOrders || 0);
+  const totalProducts = Number(totals?.totalProducts || 0);
+  const activeProducts = Number(totals?.activeProducts || 0);
+
+  const productShare = totalProducts > 0 ? Math.round(activeProducts / totalProducts * 100) : 0;
+
+  const weeklySeries = [{
+    name: "Monthly Sales",
+    data: monthlySales.length ? monthlySales : [0]
+  }];
+
+  const totalOrderSeries = [{
+    name: "Monthly Orders",
+    data: monthlyOrders.length ? monthlyOrders : [0]
+  }];
+
   return <div>
       <Grid container spacing={3}>
         {/* WEEKLY SALE CHART */}
@@ -38,8 +52,8 @@ export default function Sales() {
         md: 6,
         xs: 12
       }}>
-          <Card2 title="Weekly Sales" percentage="25.25%" amount={currency(10240, 0)}>
-            <ApexChart type="bar" width={150} height={130} series={series} options={options.weeklyChartOptions(theme)} />
+          <Card2 title="Revenue" percentage="0%" amount={currency(totalRevenue, 0)}>
+            <ApexChart type="bar" width={150} height={130} series={weeklySeries} options={options.weeklyChartOptions(theme)} />
           </Card2>
         </Grid>
 
@@ -49,8 +63,8 @@ export default function Sales() {
         md: 6,
         xs: 12
       }}>
-          <Card2 title="Product Share" percentage="10.25%" amount="39.56%">
-            <ApexChart width={140} height={200} series={[75]} type="radialBar" options={options.productShareChartOptions(theme)} />
+          <Card2 title="Product Share" percentage="0%" amount={`${productShare}%`}>
+            <ApexChart width={140} height={200} series={[productShare]} type="radialBar" options={options.productShareChartOptions(theme)} />
           </Card2>
         </Grid>
 
@@ -60,7 +74,7 @@ export default function Sales() {
         md: 6,
         xs: 12
       }}>
-          <Card2 title="Total Order" percentage="2.65%" amount={currency(12260, 0)}>
+          <Card2 title="Total Order" percentage="0%" amount={String(totalOrders)}>
             <ApexChart type="area" width={150} height={130} series={totalOrderSeries} options={options.totalOrderChartOptions(theme)} />
           </Card2>
         </Grid>
@@ -71,8 +85,8 @@ export default function Sales() {
         md: 6,
         xs: 12
       }}>
-          <Card2 title="Market Share" percentage="2.65%" amount={currency(14260, 0)}>
-            <ApexChart height={300} width={140} type="radialBar" series={[44, 55, 67]} options={options.marketShareChartOptions(theme)} />
+          <Card2 title="Active Products" percentage="0%" amount={String(activeProducts)}>
+            <ApexChart height={300} width={140} type="radialBar" series={[productShare, 100 - productShare, 100]} options={options.marketShareChartOptions(theme)} />
           </Card2>
         </Grid>
       </Grid>

@@ -1,10 +1,8 @@
 import Image from "next/image";
 import Avatar from "@mui/material/Avatar";
+import Alert from "@mui/material/Alert";
 import Rating from "@mui/material/Rating";
 import Typography from "@mui/material/Typography";
-
-// LOCAL CUSTOM COMPONENT
-import ReviewForm from "./review-form";
 
 // CUSTOM UTILS LIBRARY FUNCTION
 import { getDateDifference } from "lib";
@@ -52,14 +50,8 @@ export default async function ProductReviews() {
           </Typography>
         </ReviewRoot>)}
 
-      {/* REVIEW FORM */}
-      <Typography variant="h3" sx={{
-      mt: 7,
-      mb: 2.5
-    }}>
-        Write a Review for this product
-      </Typography>
-
-      <ReviewForm />
+      {!reviews.length ? <Alert severity="info" sx={{ mt: 4 }}>
+          لا توجد مراجعات متاحة لهذا المنتج حاليًا.
+        </Alert> : null}
     </div>;
 }

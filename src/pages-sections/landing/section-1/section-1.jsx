@@ -31,7 +31,7 @@ export default function Section1() {
           }} lineHeight={1.2} fontWeight={800} sx={{
             mb: 3
           }}>
-              Build Stunning <span>eCommerce</span> Stores with Bazaar
+              Build Stunning <span>eCommerce</span> Stores with Alphabeta Store
             </GradientText>
 
             <Typography variant="h5" color="text.secondary" fontSize={{
@@ -87,7 +87,7 @@ export default function Section1() {
                 borderRadius: 3,
                 textTransform: "none"
               }}>
-                  🚀 Get Bazaar Pro
+                  🚀 Get Alphabeta Store Pro
                 </PulseButton>
               </a>
 

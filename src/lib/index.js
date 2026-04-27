@@ -1,4 +1,5 @@
 import { formatDistanceStrict } from "date-fns/formatDistanceStrict";
+import { formatStoreCurrency } from "utils/currency";
 
 /**
  * GET THE DIFFERENCE DATE FORMAT
@@ -48,9 +49,5 @@ export function calculateDiscount(price, discount) {
  */
 
 export function currency(price, fraction = 2) {
-  return Intl.NumberFormat("en-US", {
-    currency: "USD",
-    style: "currency",
-    maximumFractionDigits: fraction
-  }).format(price);
+  return formatStoreCurrency(price, fraction);
 }

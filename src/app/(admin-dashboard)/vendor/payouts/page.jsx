@@ -1,17 +1,13 @@
-import { VendorPayoutsPageView } from "pages-sections/vendor-dashboard/v-payouts/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
-  title: "Vendor Payouts - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Vendor Payouts - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function VendorPayouts() {
-  const payouts = await api.payouts();
-  return <VendorPayoutsPageView payouts={payouts} />;
+  return <FeatureUnavailablePage title="Payouts" description="سجل السحوبات الخاص بالبائع غير متاح حاليًا لعدم وجود endpoint حقيقي يغذّي هذه الصفحة." />;
 }

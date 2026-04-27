@@ -73,7 +73,7 @@ export default function LoginPageView() {
 
       router.push(searchParams.get("next") || "/profile");
     } catch (error) {
-      setErrorMessage(error instanceof Error && error.message === "Invalid credentials." ? "Invalid credentials" : "Invalid credentials");
+      setErrorMessage(error instanceof Error && error.message === "Invalid credentials." ? "بيانات الدخول غير صحيحة" : "بيانات الدخول غير صحيحة");
     }
   });
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
@@ -82,12 +82,12 @@ export default function LoginPageView() {
         </Alert> : null}
 
       <div className="mb-1">
-        <Label>Email or Phone Number</Label>
-        <TextField fullWidth name="email" type="email" size="medium" placeholder="exmple@mail.com" />
+        <Label>البريد الإلكتروني</Label>
+        <TextField fullWidth name="email" type="email" size="medium" placeholder="you@example.com" />
       </div>
 
       <div className="mb-2">
-        <Label>Password</Label>
+        <Label>كلمة المرور</Label>
         <TextField fullWidth size="medium" name="password" autoComplete="on" placeholder="*********" type={visiblePassword ? "text" : "password"} slotProps={{
         input: {
           endAdornment: <EyeToggleButton show={visiblePassword} click={togglePasswordVisible} />
@@ -96,7 +96,7 @@ export default function LoginPageView() {
       </div>
 
       <Button fullWidth size="large" type="submit" color="primary" variant="contained" loading={isSubmitting}>
-        Login
+        تسجيل الدخول
       </Button>
     </FormProvider>;
 }

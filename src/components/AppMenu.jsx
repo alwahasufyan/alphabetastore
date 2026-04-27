@@ -1,13 +1,7 @@
 import { Fragment, useCallback, useState } from "react";
 import Menu from "@mui/material/Menu";
 
-
-// ===============================================================
-
-
-// ===============================================================
-
-export default function BazaarMenu({
+export default function AppMenu({
   open,
   sx,
   handler,
@@ -15,12 +9,15 @@ export default function BazaarMenu({
   direction = "left"
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
+
   const handleClose = useCallback(() => {
     setAnchorEl(null);
   }, []);
+
   const handleClick = useCallback(event => {
     setAnchorEl(event.currentTarget);
   }, []);
+
   return <Fragment>
       {handler(handleClick)}
 

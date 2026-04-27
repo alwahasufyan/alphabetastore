@@ -1,17 +1,13 @@
-import { EarningHistoryPageView } from "pages-sections/vendor-dashboard/earning-history/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
-  title: "Earning History - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Earning History - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function EarningHistory() {
-  const earnings = await api.earningHistory();
-  return <EarningHistoryPageView earnings={earnings} />;
+  return <FeatureUnavailablePage title="Earning History" description="سجل الأرباح غير متاح لأن الـ backend الحالي لا يوفر endpoint فعليًا لهذه البيانات." />;
 }

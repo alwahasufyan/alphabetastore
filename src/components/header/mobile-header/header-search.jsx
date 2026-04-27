@@ -15,6 +15,7 @@ import Search from "@mui/icons-material/Search";
 
 // GLOBAL CUSTOM COMPONENTS
 import FlexBetween from "components/flex-box/flex-between";
+import useSettings from "hooks/useSettings";
 export function HeaderSearch({
   children
 }) {
@@ -22,6 +23,11 @@ export function HeaderSearch({
   const searchParams = useSearchParams();
   const currentUrl = useRef(`${pathname}?${searchParams}`);
   const [open, setOpen] = useState(false);
+  const {
+    settings
+  } = useSettings();
+  const title = settings.default_language === "ar" ? "ابحث في المتجر" : "Search the store";
+
   const handleClose = () => setOpen(false);
   useEffect(() => {
     const newUrl = `${pathname}?${searchParams}`;
@@ -41,7 +47,7 @@ export function HeaderSearch({
         <Box width="auto" padding={2} height="100vh">
           <FlexBetween mb={1}>
             <Typography variant="h6" color="text.secondary">
-              Search to Bazaar
+              {title}
             </Typography>
 
             <IconButton onClick={handleClose}>

@@ -19,7 +19,7 @@ export function formatPreferredPaymentMethod(value) {
 export function mapUserProfile(user) {
   return {
     id: user?.id || "",
-    name: user?.name || "Customer",
+    name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
     preferredPaymentMethod: normalizePreferredPaymentMethod(user?.preferredPaymentMethod),

@@ -38,7 +38,7 @@ export default function CTASection() {
             lineHeight: 1.6,
             marginInline: "auto"
           }}>
-              Join thousands of developers and store owners who chose Bazaar to create stunning,
+              Join thousands of developers and store owners who chose Alphabeta Store to create stunning,
               high-performing e-commerce experiences that convert visitors into customers.
             </Typography>
 
@@ -54,7 +54,7 @@ export default function CTASection() {
           py: 2,
           fontSize: "1.2rem"
         }}>
-            🚀 Get Bazaar Now
+            🚀 Get Alphabeta Store Now
           </PrimaryButton>
 
           {/* Stats Grid */}

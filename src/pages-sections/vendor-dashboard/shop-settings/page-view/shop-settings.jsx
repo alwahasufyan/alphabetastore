@@ -2,19 +2,20 @@
 
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 
 // LOCAL CUSTOM COMPONENT
 import SettingsForm from "../settings-form";
-import PageSettings from "../page-settings";
 export default function ShopSettingsPageView() {
   return <Box py={4} maxWidth={740} margin="auto">
       <Typography variant="h3" sx={{
       mb: 2
     }}>
         Shop Settings
+      </Typography>
+
+      <Typography color="text.secondary" sx={{ mb: 2 }}>
+        Manage shop contact details, order policy, and legal agreement texts shown on customer registration. Global options like theme, language, and currency are in Site Settings.
       </Typography>
 
       <Card sx={{
@@ -28,23 +29,6 @@ export default function ShopSettingsPageView() {
         </Typography>
 
         <SettingsForm />
-
-        <Divider sx={{
-        my: 4
-      }} />
-
-        {/* SHOP SETTING SECTION */}
-        <Typography variant="h6" sx={{
-        mb: 2
-      }}>
-          Shop Page Settings
-        </Typography>
-
-        <PageSettings />
-
-        <Button color="info" variant="contained">
-          Save Changes
-        </Button>
       </Card>
     </Box>;
 }

@@ -8,7 +8,7 @@ export default async function MobileCategories() {
     },
     mobileNavigation: {
       version1: mobileNavigation,
-      logo: "/assets/images/bazaar-black-sm.svg"
+      logo: "/assets/images/logo.svg"
     }
   };
 

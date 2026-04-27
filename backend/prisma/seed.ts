@@ -64,10 +64,28 @@ async function main() {
   }
 
   const systemSettingsDefaults = [
-    { key: 'site_name', value: 'Alphabeta' },
+    { key: 'site_name', value: 'Alphabeta Store' },
     { key: 'theme', value: 'default' },
     { key: 'primary_color', value: '#1976d2' },
     { key: 'enable_whatsapp', value: 'true' },
+    { key: 'default_language', value: 'ar' },
+    { key: 'direction', value: 'rtl' },
+    { key: 'default_currency', value: 'LYD' },
+    { key: 'exchange_rate_usd_to_lyd', value: '5.2' },
+    { key: 'shop_phone', value: '+218000000000' },
+    { key: 'shop_address', value: 'Tripoli, Libya' },
+    { key: 'min_order', value: '0' },
+    { key: 'support_email', value: 'support@alphabeta.com' },
+    {
+      key: 'terms_and_conditions_text',
+      value:
+        'باستخدامك لمنصة Alphabeta Store وتسجيل حساب جديد، فإنك توافق على صحة البيانات المدخلة والالتزام بسياسات المتجر وإتمام الطلبات بطريقة نظامية.',
+    },
+    {
+      key: 'privacy_policy_text',
+      value:
+        'تقوم منصة Alphabeta Store بجمع بياناتك الأساسية فقط لغرض تقديم الخدمة ومعالجة الطلبات والدفع والدعم، ولا يتم مشاركة بياناتك خارج نطاق التشغيل القانوني للخدمة.',
+    },
   ];
 
   for (const setting of systemSettingsDefaults) {

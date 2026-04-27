@@ -4,6 +4,7 @@ import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 
 // STYLED COMPONENT
@@ -31,16 +32,20 @@ export default function Error({
   error,
   reset
 }) {
-  const message = error?.message || "An unexpected error occurred.";
+  const {
+    t
+  } = useTranslation();
+  const message = error?.message || t("genericError");
+  const normalizedMessage = /server unavailable/i.test(message) ? t("serverUnavailable") : message;
 
   return <StyledRoot>
       <Card>
-        <Typography variant="h1">Something went wrong!</Typography>
+        <Typography variant="h1">{t("somethingWentWrong")}</Typography>
         <Typography variant="body1" color="text.secondary">
-          {message}
+          {normalizedMessage}
         </Typography>
         <Button color="error" variant="contained" onClick={() => reset()}>
-          Try again
+          {t("retry")}
         </Button>
       </Card>
     </StyledRoot>;

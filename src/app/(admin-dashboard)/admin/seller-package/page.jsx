@@ -1,10 +1,10 @@
 import { SellerPackagePageView } from "pages-sections/vendor-dashboard/seller-package/page-view";
 export const metadata = {
-  title: "Seller Package - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Seller Package - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };

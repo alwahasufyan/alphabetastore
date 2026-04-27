@@ -46,8 +46,11 @@ export const ProductImageWrapper = styled("div")(({
   position: "relative",
   justifyContent: "center",
   marginBottom: theme.spacing(6),
+  borderRadius: theme.spacing(1),
+  backgroundColor: theme.palette.common.white,
+  cursor: "zoom-in",
   "& img": {
-    objectFit: "cover"
+    objectFit: "contain"
   },
   [theme.breakpoints.down("sm")]: {
     height: 300
@@ -77,5 +80,8 @@ export const PreviewImage = styled("div", {
   backgroundColor: "white",
   opacity: selected ? 1 : 0.5,
   transition: "all 0.2s ease-in-out",
-  border: `1px solid ${selected ? theme.palette.primary.main : theme.palette.divider}`
+  border: `1px solid ${selected ? theme.palette.primary.main : theme.palette.divider}`,
+  "& img": {
+    objectFit: "contain"
+  }
 }));

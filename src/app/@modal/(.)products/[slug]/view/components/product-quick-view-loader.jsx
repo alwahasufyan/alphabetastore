@@ -46,13 +46,13 @@ export default function ProductQuickViewLoader({
 
   if (loading) {
     return <Box p={4}>
-        <Typography>Loading...</Typography>
+        <Typography>جاري تحميل المنتج...</Typography>
       </Box>;
   }
 
   if (error || !product) {
     return <Box p={4}>
-        <Typography>Failed to load products</Typography>
+        <Typography>تعذر تحميل المنتج.</Typography>
       </Box>;
   }
 

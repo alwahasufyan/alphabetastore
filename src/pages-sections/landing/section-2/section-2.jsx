@@ -55,7 +55,7 @@ export default function Section2() {
         <Box textAlign="center" mb={8}>
           <Title>Everything You Need to Build Amazing Stores</Title>
           <Typography variant="h6" color="text.secondary" maxWidth={600} mx="auto" mt={2}>
-            Bazaar comes packed with powerful features and tools to help you create professional
+            Alphabeta Store comes packed with powerful features and tools to help you create professional
             e-commerce experiences that drive sales and growth.
           </Typography>
         </Box>
@@ -98,7 +98,7 @@ export default function Section2() {
         background: "linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(156, 39, 176, 0.05) 100%)"
       }}>
           {/* <Typography variant="h5" fontWeight={600} textAlign="center" mb={3}>
-            Why Choose Bazaar?
+            Why Choose Alphabeta Store?
            </Typography> */}
 
           <Grid container spacing={3}>

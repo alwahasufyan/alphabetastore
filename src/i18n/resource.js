@@ -1,14 +1,72 @@
 export const resources = {
+  ar: {
+    translation: {
+      appName: "Alphabeta Store",
+      "Need help?": "هل تحتاج مساعدة؟",
+      Home: "الرئيسية",
+      Categories: "الفئات",
+      Cart: "السلة",
+      Account: "الحساب",
+      HOT: "جديد",
+      "Free Express Shipping": "شحن سريع مجاني",
+      Login: "تسجيل الدخول",
+      Register: "إنشاء حساب",
+      Logout: "تسجيل الخروج",
+      "Save Changes": "حفظ التغييرات",
+      "Create Ticket": "إنشاء تذكرة",
+      "Open a new ticket": "فتح تذكرة جديدة",
+      "My Wish List": "قائمة المفضلة",
+      "My Orders": "طلباتي",
+      "My Profile": "ملفي الشخصي",
+      "My Addresses": "عناويني",
+      "Payment Methods": "طرق الدفع",
+      "Support Tickets": "تذاكر الدعم",
+      "Your wishlist is empty.": "قائمة المفضلة فارغة.",
+      "No orders found yet.": "لا توجد طلبات حتى الآن.",
+      "No support tickets yet.": "لا توجد تذاكر دعم حتى الآن.",
+      Loading: "جاري التحميل",
+      Error: "خطأ",
+      Submit: "إرسال",
+      Cancel: "إلغاء",
+      Search: "بحث",
+      Name: "الاسم",
+      Email: "البريد الإلكتروني",
+      Phone: "الهاتف",
+      Address: "العنوان",
+      "Minimum Order": "الحد الأدنى للطلب",
+      "Store Theme": "ثيم المتجر",
+      "Default Language": "اللغة الافتراضية",
+      "Default Currency": "العملة الافتراضية",
+      "Exchange Rate": "سعر الصرف",
+      "Shop Name": "اسم المتجر",
+      retry: "إعادة المحاولة",
+      serverUnavailable: "الخادم غير متاح حاليًا.",
+      failedToLoadData: "فشل تحميل البيانات.",
+      genericError: "حدث خطأ غير متوقع.",
+      somethingWentWrong: "حدث خطأ ما",
+      accountSettingsTitle: "إعدادات الحساب",
+      firstName: "الاسم الأول",
+      lastName: "اسم العائلة",
+      profileUpdated: "تم تحديث الحساب بنجاح."
+    }
+  },
   en: {
     translation: {
+      appName: "Alphabeta Store",
       HOT: "HOT",
-      "Free Express Shipping": "Free Express Shipping"
+      "Free Express Shipping": "Free Express Shipping",
+      retry: "Try again",
+      serverUnavailable: "Server unavailable.",
+      failedToLoadData: "Failed to load data.",
+      genericError: "An unexpected error occurred.",
+      somethingWentWrong: "Something went wrong",
+      accountSettingsTitle: "Account Settings",
+      firstName: "First Name",
+      lastName: "Last Name",
+      profileUpdated: "Profile updated successfully."
     }
   },
   es: {
-    translation: {
-      HOT: "HEISS",
-      "Free Express Shipping": "Gratis Expresverzending"
-    }
+    translation: {}
   }
 };

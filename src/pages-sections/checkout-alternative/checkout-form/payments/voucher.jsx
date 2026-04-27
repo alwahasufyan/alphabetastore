@@ -12,7 +12,7 @@ import FlexBox from "components/flex-box/flex-box";
 export default function Voucher() {
   const [hasVoucher, setHasVoucher] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [notice, setNotice] = useState("");
   const handleToggleVoucher = useCallback(() => {
     setHasVoucher(prev => !prev);
     if (hasVoucher) setVoucherCode("");
@@ -22,30 +22,26 @@ export default function Voucher() {
   }, []);
   const handleApplyVoucher = useCallback(() => {
     if (!voucherCode.trim()) return;
-    setIsLoading(true);
-
-    
-// TODO: Implement voucher API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    setNotice("التحقق من القسائم غير مفعّل حاليًا.");
   }, [voucherCode]);
   return <Box mb={3}>
       <ButtonBase disableRipple onClick={handleToggleVoucher} sx={{
       color: "primary.main",
       fontWeight: 500
     }}>
-        I have a voucher
+        لدي قسيمة خصم
       </ButtonBase>
 
       <Collapse in={hasVoucher}>
         <FlexBox mt={2} gap={2} maxWidth={400}>
-          <TextField fullWidth name="voucher" value={voucherCode} onChange={handleVoucherChange} placeholder="Enter voucher code here" aria-label="Voucher code input" />
+          <TextField fullWidth name="voucher" value={voucherCode} onChange={handleVoucherChange} placeholder="أدخل رمز القسيمة" aria-label="Voucher code input" />
 
-          <Button type="button" color="primary" variant="contained" onClick={handleApplyVoucher} disabled={!voucherCode.trim() || isLoading}>
-            {isLoading ? "Applying..." : "Apply"}
+          <Button type="button" color="primary" variant="contained" onClick={handleApplyVoucher} disabled={!voucherCode.trim()}>
+            تطبيق
           </Button>
         </FlexBox>
+
+        {notice ? <Box mt={1.5} color="text.secondary" fontSize={13}>{notice}</Box> : null}
       </Collapse>
     </Box>;
 }

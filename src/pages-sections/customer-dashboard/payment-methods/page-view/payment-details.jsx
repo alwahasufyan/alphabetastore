@@ -1,8 +1,7 @@
 import { Fragment } from "react";
+import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
 
-// LOCAL CUSTOM COMPONENT
-import PaymentForm from "../payment-form";
 import DashboardHeader from "../../dashboard-header";
 
 // CUSTOM DATA MODEL
@@ -17,7 +16,7 @@ export function PaymentDetailsPageView({
   payment
 }) {
   return <Fragment>
-      <DashboardHeader title="Add New Payment" href="/payment-methods" />
+      <DashboardHeader title="طرق الدفع" href="/payment-methods" />
 
       <Card sx={{
       padding: {
@@ -25,7 +24,9 @@ export function PaymentDetailsPageView({
         sm: 4
       }
     }}>
-        <PaymentForm payment={payment} />
+        <Alert severity="info">
+          تحرير بطاقات الدفع غير متاح حاليًا لأن الواجهة الخلفية لا تدعم بطاقات محفوظة بعد.
+        </Alert>
       </Card>
     </Fragment>;
 }

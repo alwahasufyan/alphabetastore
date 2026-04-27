@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 // GLOBAL CUSTOM COMPONENT
 import OverlayScrollbar from "components/overlay-scrollbar";
 import { useAuth } from "contexts/AuthContext";
+import useSettings from "hooks/useSettings";
 
 // LOCAL CUSTOM COMPONENT
 import SidebarAccordion from "./sidebar-accordion";
@@ -19,6 +20,68 @@ import { navigation } from "../dashboard-navigation";
 
 // STYLED COMPONENTS
 import { ListLabel, BadgeValue, StyledText, BulletIcon, ExternalLink, NavItemButton, ListIconWrapper } from "./styles";
+
+const ARABIC_LABELS = {
+  Admin: "الإدارة",
+  Vendor: "البائع",
+  Dashboard: "لوحة التحكم",
+  Products: "المنتجات",
+  "Product List": "قائمة المنتجات",
+  "Create Product": "إضافة منتج",
+  Categories: "الفئات",
+  "Category List": "قائمة الفئات",
+  "Create Category": "إضافة فئة",
+  Orders: "الطلبات",
+  "Order List": "قائمة الطلبات",
+  "Order Details": "تفاصيل الطلب",
+  Payments: "المدفوعات",
+  "Support Tickets": "تذاكر الدعم",
+  Customers: "العملاء",
+  Refunds: "الاسترجاعات",
+  "Refund Request": "طلب استرجاع",
+  "Refund Settings": "إعدادات الاسترجاع",
+  Sellers: "البائعون",
+  "Seller List": "قائمة البائعين",
+  "Seller Package": "باقة البائع",
+  "Package Payments": "مدفوعات الباقات",
+  "Earning History": "سجل الأرباح",
+  Payouts: "عمليات السحب",
+  "Payout Request": "طلب سحب",
+  "Payout Settings": "إعدادات السحب",
+  Earnings: "الأرباح",
+  Reviews: "المراجعات",
+  "Shop Setting": "إعدادات المتجر",
+  "Account Settings": "إعدادات الحساب",
+  "Site Settings": "إعدادات الموقع",
+  Logout: "تسجيل الخروج"
+};
+
+function localizeNavigationItems(items, isArabic) {
+  if (!isArabic) {
+    return items;
+  }
+
+  return items.map(item => {
+    const localized = {
+      ...item
+    };
+
+    if (typeof localized.name === "string") {
+      localized.name = ARABIC_LABELS[localized.name] || localized.name;
+    }
+
+    if (typeof localized.label === "string") {
+      localized.label = ARABIC_LABELS[localized.label] || localized.label;
+    }
+
+    if (Array.isArray(localized.children)) {
+      localized.children = localizeNavigationItems(localized.children, true);
+    }
+
+    return localized;
+  });
+}
+
 export default function MultiLevelMenu() {
   const pathname = usePathname();
   const router = useRouter();
@@ -28,6 +91,10 @@ export default function MultiLevelMenu() {
     TOP_HEADER_AREA,
     handleCloseMobileSidebar
   } = useLayout();
+  const {
+    settings
+  } = useSettings();
+  const localizedNavigation = localizeNavigationItems(navigation, settings.default_language === "ar");
 
   
 // HANDLE ACTIVE CURRENT PAGE
@@ -90,6 +157,6 @@ export default function MultiLevelMenu() {
     overflowX: "hidden",
     maxHeight: `calc(100vh - ${TOP_HEADER_AREA}px)`
   }}>
-      {renderLevels(navigation)}
+      {renderLevels(localizedNavigation)}
     </OverlayScrollbar>;
 }

@@ -26,7 +26,7 @@ const styles = {
 const TECHNOLOGIES = [{
   imgUrl: react,
   title: "React",
-  description: "UI Library",
+  description: "Alphabeta Store",
   url: "https://reactjs.org/"
 }, {
   imgUrl: nextjs,

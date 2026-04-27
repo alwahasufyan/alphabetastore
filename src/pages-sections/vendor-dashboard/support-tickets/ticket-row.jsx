@@ -32,7 +32,7 @@ export default function TicketRow({
   return <StyledTableRow role="checkbox">
       <StyledTableCell align="left">
         <Typography fontWeight={600}>{subject}</Typography>
-        <Typography variant="body2" color="text.secondary">{customer?.name || "Customer"}</Typography>
+        <Typography variant="body2" color="text.secondary">{customer?.name || "-"}</Typography>
       </StyledTableCell>
 
       <StyledTableCell align="left">

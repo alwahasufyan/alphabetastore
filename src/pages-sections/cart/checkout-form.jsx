@@ -10,6 +10,7 @@ import Typography from "@mui/material/Typography";
 
 // GLOBAL CUSTOM HOOK
 import useCart from "hooks/useCart";
+import useSettings from "hooks/useSettings";
 
 // GLOBAL CUSTOM COMPONENTS
 import { FlexBetween, FlexBox } from "components/flex-box";
@@ -23,7 +24,13 @@ export default function CheckoutForm() {
   const {
     state
   } = useCart();
+  const {
+    settings
+  } = useSettings();
+
   const getTotalPrice = () => state.cart.reduce((acc, item) => acc + item.price * item.qty, 0);
+  const minOrder = Number(settings.min_order || 0);
+
   return <Card elevation={0} sx={{
     padding: 3,
     border: "1px solid",
@@ -32,7 +39,7 @@ export default function CheckoutForm() {
   }}>
       <FlexBetween mb={2}>
         <Typography variant="body1" fontSize={16} fontWeight={600}>
-          Total:
+          الإجمالي:
         </Typography>
 
         <Typography variant="body1" fontSize={18} fontWeight={600} lineHeight={1}>
@@ -40,13 +47,17 @@ export default function CheckoutForm() {
         </Typography>
       </FlexBetween>
 
+      {minOrder > 0 ? <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          الحد الأدنى للطلب: {currency(minOrder)}
+        </Typography> : null}
+
       <Divider sx={{
       mb: 2
     }} />
 
       <FlexBox alignItems="center" columnGap={1} mb={2}>
         <Typography variant="body1" fontWeight={500}>
-          Additional Comments
+          ملاحظات إضافية
         </Typography>
 
         <Typography variant="body1" sx={{
@@ -56,7 +67,7 @@ export default function CheckoutForm() {
         borderRadius: "3px",
         bgcolor: "grey.200"
       }}>
-          Note
+          ملاحظة
         </Typography>
       </FlexBox>
 
@@ -65,10 +76,10 @@ export default function CheckoutForm() {
 
       {/* APPLY VOUCHER TEXT FIELD */}
       <FlexBox alignItems="center" gap={1} my={2}>
-        <TextField fullWidth size="small" label="Voucher" variant="outlined" placeholder="Voucher" />
+        <TextField fullWidth size="small" label="قسيمة" variant="outlined" placeholder="قسيمة" />
 
         <Button variant="outlined" color="primary">
-          Apply
+          تطبيق
         </Button>
       </FlexBox>
 
@@ -79,11 +90,11 @@ export default function CheckoutForm() {
       <Typography variant="body1" fontWeight={500} sx={{
       mb: 2
     }}>
-        Shipping Estimates
+        تقدير الشحن
       </Typography>
 
       {/* COUNTRY TEXT FIELD */}
-      <TextField fullWidth size="small" label="Country" value="Libya" variant="outlined" slotProps={{
+      <TextField fullWidth size="small" label="الدولة" value="Libya" variant="outlined" slotProps={{
       input: {
         readOnly: true
       }
@@ -92,7 +103,7 @@ export default function CheckoutForm() {
     }} />
 
       {/* STATE/CITY TEXT FIELD */}
-      <TextField select fullWidth size="small" label="City" variant="outlined" defaultValue={LIBYAN_CITIES[0] || ""}>
+      <TextField select fullWidth size="small" label="المدينة" variant="outlined" defaultValue={LIBYAN_CITIES[0] || ""}>
         {LIBYAN_CITIES.map(city => <MenuItem value={city} key={city}>
             {city}
           </MenuItem>)}
@@ -101,11 +112,11 @@ export default function CheckoutForm() {
       <Button variant="outlined" color="primary" fullWidth sx={{
       my: 2
     }}>
-        Calculate Shipping
+        احتساب الشحن
       </Button>
 
       <Button fullWidth color="primary" href="/checkout" variant="contained" LinkComponent={Link}>
-        Checkout Now
+        إتمام الطلب
       </Button>
     </Card>;
 }

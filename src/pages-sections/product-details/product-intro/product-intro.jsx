@@ -48,7 +48,7 @@ export default function ProductIntro({
           <Typography variant="h1">{product.title}</Typography>
 
           {product.categoryName ? <Typography variant="body1">
-              Category: <strong>{product.categoryName}</strong>
+              الفئة: <strong>{product.categoryName}</strong>
             </Typography> : null}
 
           {product.shortDescription ? <Typography variant="body1" sx={{
@@ -68,7 +68,7 @@ export default function ProductIntro({
               {currency(product.price)}
             </Typography>
 
-            <p>{hasStock ? `${product.stockQty} in stock` : "Out of stock"}</p>
+            <p>{hasStock ? `المتوفر: ${product.stockQty}` : "نفدت الكمية"}</p>
           </div>
 
           {/* ADD TO CART BUTTON */}

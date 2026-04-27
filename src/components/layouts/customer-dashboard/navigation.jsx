@@ -8,48 +8,49 @@ import { useRouter } from "next/navigation";
 // CUSTOM COMPONENTS
 import NavItem from "./nav-item";
 import { useAuth } from "contexts/AuthContext";
+import useSettings from "hooks/useSettings";
 
 // STYLED COMPONENTS
 import { MainContainer } from "./styles";
-const MENUS = [{
-  title: "DASHBOARD",
-  list: [{
-    count: 5,
-    icon: "Packages",
-    href: "/orders",
-    title: "Orders"
-  }, {
-    count: 19,
-    icon: "HeartLine",
-    href: "/wish-list",
-    title: "Wishlist"
-  }, {
-    count: 1,
-    icon: "Headset",
-    href: "/support-tickets",
-    title: "Support Tickets"
-  }]
-}, {
-  title: "ACCOUNT SETTINGS",
-  list: [{
-    icon: "User3",
-    href: "/profile",
-    title: "Profile Info"
-  }, {
-    count: 16,
-    icon: "Location",
-    href: "/address",
-    title: "Addresses"
-  }, {
-    count: 4,
-    icon: "CreditCard",
-    href: "/payment-methods",
-    title: "Payment Methods"
-  }]
-}];
 export function Navigation() {
   const router = useRouter();
   const { logout } = useAuth();
+  const {
+    settings
+  } = useSettings();
+  const isArabic = settings.default_language === "ar";
+
+  const MENUS = [{
+    title: isArabic ? "لوحة العميل" : "Dashboard",
+    list: [{
+      icon: "Packages",
+      href: "/orders",
+      title: isArabic ? "الطلبات" : "Orders"
+    }, {
+      icon: "HeartLine",
+      href: "/wish-list",
+      title: isArabic ? "المفضلة" : "Wishlist"
+    }, {
+      icon: "Headset",
+      href: "/support-tickets",
+      title: isArabic ? "تذاكر الدعم" : "Support Tickets"
+    }]
+  }, {
+    title: isArabic ? "إعدادات الحساب" : "Account Settings",
+    list: [{
+      icon: "User3",
+      href: "/profile",
+      title: isArabic ? "الملف الشخصي" : "Profile Info"
+    }, {
+      icon: "Location",
+      href: "/address",
+      title: isArabic ? "العناوين" : "Addresses"
+    }, {
+      icon: "CreditCard",
+      href: "/payment-methods",
+      title: isArabic ? "طرق الدفع" : "Payment Methods"
+    }]
+  }];
 
   const handleLogout = async () => {
     await logout();
@@ -69,7 +70,7 @@ export function Navigation() {
 
       <Box px={4} mt={6} pb={2}>
         <Button disableElevation variant="outlined" color="primary" fullWidth onClick={handleLogout}>
-          Logout
+          {isArabic ? "تسجيل الخروج" : "Logout"}
         </Button>
       </Box>
     </MainContainer>;

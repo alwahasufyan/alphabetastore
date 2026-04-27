@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import Delete from "@mui/icons-material/Delete";
 
 // GLOBAL CUSTOM COMPONENTS
-import BazaarSwitch from "components/BazaarSwitch";
+import AppSwitch from "components/AppSwitch";
 import FlexBox from "components/flex-box/flex-box";
 
 // STYLED COMPONENTS
@@ -45,7 +45,7 @@ export default function ReviewRow({
       <StyledTableCell align="left">{comment}</StyledTableCell>
 
       <StyledTableCell align="left">
-        <BazaarSwitch color="info" checked={productPublish} onChange={() => setProductPublish(state => !state)} />
+        <AppSwitch color="info" checked={productPublish} onChange={() => setProductPublish(state => !state)} />
       </StyledTableCell>
 
       <StyledTableCell align="center">

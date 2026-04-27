@@ -60,7 +60,7 @@ export default function Header() {
                   <Typography className="link">Storybook</Typography>
                  </a> */}
 
-                <a href="https://bazaar-doc.netlify.app/" target="__blank">
+                <a href="https://alphabeta.com/docs" target="__blank">
                   <Typography className="link">Documentation</Typography>
                 </a>
               </FlexBox>
@@ -95,11 +95,11 @@ export default function Header() {
                       </Typography>
                     </Scroll>
 
-                    <Button href="https://material-ui.com/store/items/bazaar-pro-react-ecommerce-template/" LinkComponent={Link} variant="outlined" color="primary" target="_blank">
+                    <Button href="https://alphabeta.com" LinkComponent={Link} variant="outlined" color="primary" target="_blank">
                       Purchase Now
                     </Button>
                   </Box>
-                </SideNav> : <a target="__blank" href="https://tinyurl.com/get-bazaar">
+                </SideNav> : <a target="__blank" href="https://tinyurl.com/alphabeta-store">
                   <Button variant="outlined">Purchase Now</Button>
                 </a>}
             </FlexBox>

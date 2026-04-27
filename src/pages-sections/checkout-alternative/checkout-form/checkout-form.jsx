@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 
 // GLOBAL CUSTOM COMPONENTS
@@ -55,6 +57,7 @@ export default function CheckoutForm({
   deliveryAddresses,
   deliveryTimes
 }) {
+  const [submitBlocked, setSubmitBlocked] = useState(false);
   const initialValues = {
     card: "",
     date: "",
@@ -83,9 +86,7 @@ export default function CheckoutForm({
     name: "card"
   });
   const handleSubmitForm = handleSubmit(values => {
-    alert(JSON.stringify(values, null, 2));
-    
-// router.push("/payment");
+    setSubmitBlocked(true);
   });
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
       <DeliveryDate deliveryTimes={deliveryTimes} />
@@ -100,6 +101,10 @@ export default function CheckoutForm({
         <CardList cards={cards} />
 
         <Voucher />
+
+        {submitBlocked ? <Alert severity="info" sx={{ mb: 3 }}>
+            إتمام الطلب من مسار الدفع البديل غير مدعوم حاليًا لأنه لم يتم ربطه بواجهة إنشاء الطلبات الفعلية.
+          </Alert> : null}
 
         <Button size="large" type="submit" color="primary" variant="contained" loading={isSubmitting}>
           Place Order

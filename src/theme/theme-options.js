@@ -14,6 +14,8 @@ const breakpoints = {
 const themeColorMap = {
   default: COLORS.DARK,
   dark: COLORS.DARK,
+  electronics: COLORS.BLUISH,
+  fashion: COLORS.GOLD,
   red: COLORS.RED,
   green: COLORS.GREEN,
   orange: COLORS.ORANGE,
@@ -24,6 +26,8 @@ const themeColorMap = {
   bluish: COLORS.BLUISH,
   yellow: COLORS.YELLOW
 };
+
+export const AVAILABLE_THEME_KEYS = Object.keys(themeColorMap);
 
 function isValidHexColor(value) {
   return /^#([\da-fA-F]{6})$/.test(String(value || "").trim());

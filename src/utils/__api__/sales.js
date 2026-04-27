@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { fetchCategories, fetchProducts } from "utils/catalog";
+import { fetchCategories, fetchProductsPage } from "utils/catalog";
 
 const getCategories = cache(async () => {
   const categories = await fetchCategories();
@@ -16,16 +16,16 @@ const getCategoriesTwo = cache(async () => {
 const getProducts = cache(async (page = 1, category) => {
   const PAGE_SIZE = 20;
   const currentPage = Math.max(Number(page) || 1, 1);
-  const sourceProducts = await fetchProducts({
-    category
+  const response = await fetchProductsPage({
+    category,
+    page: currentPage,
+    limit: PAGE_SIZE
   });
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const currentProducts = sourceProducts.slice(startIndex, startIndex + PAGE_SIZE);
 
   const data = {
-    totalProducts: sourceProducts.length,
+    totalProducts: response.pagination.total,
     pageSize: PAGE_SIZE,
-    products: currentProducts
+    products: response.products
   };
 
   return data;

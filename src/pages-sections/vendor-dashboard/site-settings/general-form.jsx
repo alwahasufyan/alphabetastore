@@ -12,10 +12,30 @@ import Button from "@mui/material/Button";
 import useSettings from "hooks/useSettings";
 import { apiGet, apiPatch } from "utils/api";
 import { FormProvider, TextField } from "components/form-hook";
+import { AVAILABLE_THEME_KEYS } from "theme/theme-options";
+
+const THEME_LABELS = {
+  default: "Default",
+  dark: "Dark",
+  electronics: "Electronics",
+  fashion: "Fashion",
+  red: "Red",
+  green: "Green",
+  orange: "Orange",
+  gold: "Gold",
+  gift: "Gift",
+  paste: "Paste",
+  health: "Health",
+  bluish: "Bluish",
+  yellow: "Yellow"
+};
 
 const validationSchema = yup.object().shape({
   site_name: yup.string().required("site name is required"),
-  theme: yup.string().required("theme is required"),
+  theme: yup.string().oneOf(AVAILABLE_THEME_KEYS).required("theme is required"),
+  default_language: yup.string().oneOf(["ar", "en"]).required("default language is required"),
+  default_currency: yup.string().oneOf(["LYD", "USD"]).required("default currency is required"),
+  exchange_rate_usd_to_lyd: yup.number().moreThan(0).required("exchange rate is required"),
   primary_color: yup.string().matches(/^#[\dA-Fa-f]{6}$/, "Primary color must be a valid hex color"),
   enable_whatsapp: yup.string().oneOf(["true", "false"]).required("WhatsApp setting is required")
 });
@@ -31,6 +51,9 @@ export default function GeneralForm() {
   const initialValues = {
     site_name: "",
     theme: "default",
+    default_language: "ar",
+    default_currency: "LYD",
+    exchange_rate_usd_to_lyd: 5.2,
     primary_color: "#1976d2",
     enable_whatsapp: "true"
   };
@@ -55,6 +78,9 @@ export default function GeneralForm() {
         reset({
           site_name: String(response?.site_name || ""),
           theme: String(response?.theme || "default"),
+          default_language: response?.default_language === "en" ? "en" : "ar",
+          default_currency: String(response?.default_currency || "LYD").toUpperCase() === "USD" ? "USD" : "LYD",
+          exchange_rate_usd_to_lyd: Number(response?.exchange_rate_usd_to_lyd || 5.2),
           primary_color: String(response?.primary_color || "#1976d2"),
           enable_whatsapp: String(response?.enable_whatsapp ?? "true")
         });
@@ -77,6 +103,18 @@ export default function GeneralForm() {
       key: "theme",
       value: values.theme
     }, {
+      key: "default_language",
+      value: values.default_language
+    }, {
+      key: "direction",
+      value: values.default_language === "ar" ? "rtl" : "ltr"
+    }, {
+      key: "default_currency",
+      value: values.default_currency
+    }, {
+      key: "exchange_rate_usd_to_lyd",
+      value: String(values.exchange_rate_usd_to_lyd)
+    }, {
       key: "primary_color",
       value: values.primary_color
     }, {
@@ -90,6 +128,10 @@ export default function GeneralForm() {
       updateSettings({
         site_name: values.site_name,
         theme: values.theme,
+        default_language: values.default_language,
+        direction: values.default_language === "ar" ? "rtl" : "ltr",
+        default_currency: values.default_currency,
+        exchange_rate_usd_to_lyd: String(values.exchange_rate_usd_to_lyd),
         primary_color: values.primary_color,
         enable_whatsapp: values.enable_whatsapp
       });
@@ -129,7 +171,29 @@ export default function GeneralForm() {
         </Grid>
 
         <Grid size={12}>
-          <TextField fullWidth color="info" size="medium" name="theme" label="Theme" placeholder="default" />
+          <TextField select fullWidth color="info" size="medium" name="theme" label="Store Theme">
+            {AVAILABLE_THEME_KEYS.map(themeKey => <MenuItem key={themeKey} value={themeKey}>
+                {THEME_LABELS[themeKey] || themeKey}
+              </MenuItem>)}
+          </TextField>
+        </Grid>
+
+        <Grid size={{ md: 6, xs: 12 }}>
+          <TextField select fullWidth color="info" size="medium" name="default_language" label="Default Language">
+            <MenuItem value="ar">Arabic</MenuItem>
+            <MenuItem value="en">English</MenuItem>
+          </TextField>
+        </Grid>
+
+        <Grid size={{ md: 6, xs: 12 }}>
+          <TextField select fullWidth color="info" size="medium" name="default_currency" label="Default Currency">
+            <MenuItem value="LYD">LYD</MenuItem>
+            <MenuItem value="USD">USD</MenuItem>
+          </TextField>
+        </Grid>
+
+        <Grid size={12}>
+          <TextField fullWidth color="info" size="medium" name="exchange_rate_usd_to_lyd" type="number" label="USD to LYD Exchange Rate" />
         </Grid>
 
         <Grid size={12}>

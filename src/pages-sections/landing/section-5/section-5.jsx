@@ -101,12 +101,13 @@ export default function Section5() {
         </div>
 
         <div className="server">
-          <a href="https://www.getbazaar.io/" target="_blank" style={{
+          <a href="https://www.alphabeta.com/" target="_blank" style={{
           display: "block"
         }}>
-            <LazyImage width={1000} height={250} alt="Bazaar server" src="https://ui-lib.com/wp-content/uploads/2023/10/bazaar-server.jpg" />
+            <LazyImage width={1000} height={250} alt="Alphabeta Store server" src="https://alphabeta.com/wp-content/uploads/2023/10/alphabeta-store-server.jpg" />
           </a>
         </div>
       </Container>
     </StyledRoot>;
 }
+

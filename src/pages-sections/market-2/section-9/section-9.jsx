@@ -10,7 +10,7 @@ import { StyledContent, StyledRoot } from "./styles";
 export default function Section9() {
   return <Container>
       <StyledRoot>
-        <LazyImage fill priority quality={90} loading="eager" alt="Newsletter Bazaar" sizes="(max-width: 768px) 100vw, 1200px" src="/assets/images/market-2/newsletter-bg.png" sx={{
+        <LazyImage fill priority quality={90} loading="eager" alt="Newsletter Alphabeta Store" sizes="(max-width: 768px) 100vw, 1200px" src="/assets/images/market-2/newsletter-bg.png" sx={{
         objectFit: "cover",
         objectPosition: "center"
       }} />

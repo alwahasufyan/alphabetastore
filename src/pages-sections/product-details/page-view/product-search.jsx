@@ -7,6 +7,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
+import Skeleton from "@mui/material/Skeleton";
 import TextField from "@mui/material/TextField";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
@@ -24,7 +25,7 @@ import { FlexBetween, FlexBox } from "components/flex-box";
 import ProductFilters from "components/products-view/filters";
 import ProductsGridView from "components/products-view/products-grid-view";
 import ProductsListView from "components/products-view/products-list-view";
-import { buildProductFilters, fetchCategories, fetchProducts } from "utils/catalog";
+import { buildProductFilters, fetchCategories, fetchProductsPage } from "utils/catalog";
 
 // TYPES
 
@@ -55,6 +56,8 @@ const EMPTY_FILTERS = {
   categories: []
 };
 
+const PAGE_SIZE = 12;
+
 export default function ProductSearchPageView() {
   const router = useRouter();
   const pathname = usePathname();
@@ -66,6 +69,12 @@ export default function ProductSearchPageView() {
   const category = searchParams.get("category");
   const [products, setProducts] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 1
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -77,22 +86,31 @@ export default function ProductSearchPageView() {
         setLoading(true);
         setError("");
 
-        const [categoriesResponse, productsResponse] = await Promise.all([fetchCategories(), fetchProducts({
+        const [categoriesResponse, productsResponse] = await Promise.all([fetchCategories(), fetchProductsPage({
           q: query,
           category,
           sort,
-          status: "ACTIVE"
+          status: "ACTIVE",
+          page: Number(page) || 1,
+          limit: PAGE_SIZE
         })]);
 
         if (!active) return;
 
         setFilters(buildProductFilters(categoriesResponse));
-        setProducts(productsResponse);
+        setProducts(productsResponse.products);
+        setPagination(productsResponse.pagination);
       } catch {
         if (!active) return;
 
         setFilters(EMPTY_FILTERS);
         setProducts([]);
+        setPagination({
+          page: 1,
+          limit: PAGE_SIZE,
+          total: 0,
+          totalPages: 1
+        });
         setError("Failed to load products");
       } finally {
         if (active) {
@@ -106,25 +124,34 @@ export default function ProductSearchPageView() {
     return () => {
       active = false;
     };
-  }, [category, query, sort]);
+  }, [category, page, query, sort]);
 
   const handleChangeSearchParams = (key, value) => {
     if (!key || !value) return;
     const params = new URLSearchParams(searchParams);
+
+    if (key !== "page") {
+      params.delete("page");
+    }
+
     params.set(key, value);
     router.push(`${pathname}?${params.toString()}`);
   };
 
-  const totalProducts = products.length;
-  const pageCount = 1;
-  const firstIndex = totalProducts ? 1 : 0;
-  const lastIndex = totalProducts;
-  const currentPage = Math.min(Number(page) || 1, pageCount);
+  const totalProducts = Number(pagination.total || 0);
+  const pageCount = Math.max(1, Number(pagination.totalPages || 1));
+  const currentPage = Math.min(Number(pagination.page || page || 1), pageCount);
+  const firstIndex = totalProducts ? (currentPage - 1) * PAGE_SIZE + 1 : 0;
+  const lastIndex = totalProducts ? Math.min(currentPage * PAGE_SIZE, totalProducts) : 0;
 
   if (loading) {
     return <div className="bg-white pt-2 pb-4">
         <Container>
-          <Typography>Loading...</Typography>
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4, 5, 6].map(item => <Grid key={item} size={{ lg: 4, md: 6, xs: 12 }}>
+                <Skeleton variant="rounded" height={280} />
+              </Grid>)}
+          </Grid>
         </Container>
       </div>;
   }
@@ -132,7 +159,7 @@ export default function ProductSearchPageView() {
   if (error) {
     return <div className="bg-white pt-2 pb-4">
         <Container>
-          <Typography>{error}</Typography>
+          <Typography>تعذر تحميل المنتجات.</Typography>
         </Container>
       </div>;
   }
@@ -145,12 +172,12 @@ export default function ProductSearchPageView() {
               <Typography variant="h5" sx={{
             mb: 0.5
           }}>
-                Searching for “{query}”
+                نتائج البحث عن "{query}"
               </Typography>
               <Typography variant="body1" sx={{
             color: "grey.600"
           }}>
-                {products.length} results found
+                تم العثور على {totalProducts} منتج
               </Typography>
             </div> : <div />}
 
@@ -160,10 +187,10 @@ export default function ProductSearchPageView() {
               color: "grey.600",
               whiteSpace: "pre"
             }}>
-                Sort by:
+                ترتيب حسب:
               </Typography>
 
-              <TextField select fullWidth size="small" value={sort} variant="outlined" placeholder="Sort by" onChange={e => handleChangeSearchParams("sort", e.target.value)} sx={{
+              <TextField select fullWidth size="small" value={sort} variant="outlined" placeholder="ترتيب حسب" onChange={e => handleChangeSearchParams("sort", e.target.value)} sx={{
               flex: "1 1 0",
               minWidth: "150px"
             }}>
@@ -178,7 +205,7 @@ export default function ProductSearchPageView() {
               color: "grey.600",
               mr: 1
             }}>
-                View:
+                العرض:
               </Typography>
 
               <IconButton onClick={() => handleChangeSearchParams("view", "grid")}>
@@ -232,14 +259,14 @@ export default function ProductSearchPageView() {
             mt: 4,
             color: "grey.600"
           }}>
-                No products found
+                لا توجد منتجات مطابقة.
               </Typography> : null}
 
             <FlexBetween flexWrap="wrap" mt={6}>
               <Typography variant="body1" sx={{
               color: "grey.600"
             }}>
-                Showing {firstIndex}-{lastIndex} of {totalProducts} Products
+                عرض {firstIndex}-{lastIndex} من إجمالي {totalProducts} منتج
               </Typography>
 
               <Pagination color="primary" variant="outlined" page={currentPage} count={pageCount} onChange={(_, nextPage) => handleChangeSearchParams("page", nextPage.toString())} />

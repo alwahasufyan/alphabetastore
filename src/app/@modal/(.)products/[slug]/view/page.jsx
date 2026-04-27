@@ -6,11 +6,11 @@ export async function generateMetadata({
     slug
   } = await params;
   return {
-    title: `${slug} - Bazaar Next.js E-commerce Template`,
-    description: "Bazaar is a React Next.js E-commerce template.",
+    title: `${slug} - Alphabeta Store`,
+    description: "Alphabeta Store for the Libya market.",
     authors: [{
-      name: "UI-LIB",
-      url: "https://ui-lib.com"
+      name: "Alphabeta Store",
+      url: "https://alphabeta.com"
     }],
     keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
   };

@@ -8,7 +8,7 @@ import Delete from "@mui/icons-material/Delete";
 import RemoveRedEye from "@mui/icons-material/RemoveRedEye";
 
 // GLOBAL CUSTOM COMPONENT
-import BazaarSwitch from "components/BazaarSwitch";
+import AppSwitch from "components/AppSwitch";
 
 // STYLED COMPONENTS
 import { StyledIconButton, StyledTableCell, StyledTableRow } from "../styles";
@@ -50,7 +50,7 @@ export default function BrandRow({
       </StyledTableCell>
 
       <StyledTableCell align="center">
-        <BazaarSwitch color="info" checked={featuredCategory} onChange={() => setFeaturedCategory(state => !state)} />
+        <AppSwitch color="info" checked={featuredCategory} onChange={() => setFeaturedCategory(state => !state)} />
       </StyledTableCell>
 
       <StyledTableCell align="center">

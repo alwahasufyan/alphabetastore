@@ -41,7 +41,7 @@ export default function ProductQuickView({
         <Typography variant="body1" color="text.secondary" sx={{
         mb: 4
       }}>
-          {product?.description || "Sed egestas, ante et vulputate volutpat, eros pede semper est, vitae luctus metus libero eu augue. Morbi purus liberpuro ate vol faucibus adipiscing."}
+          {product?.description || "لا يوجد وصف تفصيلي متاح لهذا المنتج حاليًا."}
         </Typography>
 
         <ButtonGroup product={product} />

@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 import { validationSchema } from './config/env.validation';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -25,6 +26,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    DashboardModule,
     CategoriesModule,
     ProductsModule,
     ServicesModule,

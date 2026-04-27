@@ -54,6 +54,14 @@ function buildCatalogQueryString(filters = {}) {
     params.set("sort", filters.sort);
   }
 
+  if (Number(filters.page) > 0) {
+    params.set("page", String(filters.page));
+  }
+
+  if (Number(filters.limit) > 0) {
+    params.set("limit", String(filters.limit));
+  }
+
   const queryString = params.toString();
   return queryString ? `?${queryString}` : "";
 }
@@ -82,11 +90,19 @@ function readEnvelopeErrorMessage(payload, fallbackMessage) {
   return fallbackMessage;
 }
 
-async function fetchCatalog(path, fallbackMessage, fallbackData) {
+async function fetchCatalog(path, fallbackMessage, fallbackData, options = {}) {
+  const requestOptions = {
+    cache: options.cacheMode || "force-cache"
+  };
+
+  if (typeof window === "undefined" && Number(options.revalidate || 0) > 0) {
+    requestOptions.next = {
+      revalidate: Number(options.revalidate)
+    };
+  }
+
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
-      cache: "no-store"
-    });
+    const response = await fetch(`${API_BASE_URL}${path}`, requestOptions);
 
     const text = await response.text();
     const data = text ? JSON.parse(text) : null;
@@ -97,9 +113,8 @@ async function fetchCatalog(path, fallbackMessage, fallbackData) {
 
     return unwrapEnvelope(data);
   } catch (error) {
-    // Keep static build resilient when backend is temporarily unavailable.
-    if (typeof window === "undefined") {
-      return fallbackData;
+    if (error instanceof Error && /fetch failed|ECONNREFUSED|ENOTFOUND|ETIMEDOUT/i.test(error.message)) {
+      throw new Error("Server unavailable");
     }
 
     throw error instanceof Error ? error : new Error(fallbackMessage);
@@ -119,12 +134,46 @@ function createCategoryHref(slug) {
 }
 
 export async function fetchCategories() {
-  return fetchCatalog("/categories", "Failed to load categories", []);
+  return fetchCatalog("/categories", "Failed to load categories", [], {
+    cacheMode: "force-cache",
+    revalidate: 120
+  });
 }
 
 export async function fetchProducts(filters = {}) {
-  const products = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products", []);
+  const response = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products", [], {
+    cacheMode: filters.noStore ? "no-store" : "force-cache",
+    revalidate: filters.noStore ? 0 : 30
+  });
+
+  const products = Array.isArray(response?.items) ? response.items : response;
   return Array.isArray(products) ? products.map(mapCatalogProduct) : [];
+}
+
+export async function fetchProductsPage(filters = {}) {
+  const response = await fetchCatalog(`/products${buildCatalogQueryString(filters)}`, "Failed to load products", {
+    items: [],
+    pagination: {
+      page: 1,
+      limit: 12,
+      total: 0,
+      totalPages: 1
+    }
+  }, {
+    cacheMode: "no-store"
+  });
+
+  const items = Array.isArray(response?.items) ? response.items : [];
+
+  return {
+    products: items.map(mapCatalogProduct),
+    pagination: {
+      page: Number(response?.pagination?.page || filters.page || 1),
+      limit: Number(response?.pagination?.limit || filters.limit || 12),
+      total: Number(response?.pagination?.total || items.length),
+      totalPages: Number(response?.pagination?.totalPages || 1)
+    }
+  };
 }
 
 export async function fetchProductBySlug(slug) {

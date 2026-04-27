@@ -3,8 +3,8 @@ export const metadata = {
   title: "Wish List - Alphabeta Store",
   description: "Manage your Alphabeta wishlist.",
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "wishlist", "customer dashboard"]
 };

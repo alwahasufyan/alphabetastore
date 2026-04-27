@@ -8,9 +8,6 @@ import FlexBetween from "components/flex-box/flex-between";
 // LOCAL CUSTOM COMPONENT
 import DataListTable from "./table";
 
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
-
 // DATA TYPES
 
 
@@ -32,8 +29,16 @@ const tableHeading = [{
   label: "Amount",
   alignCenter: true
 }];
-export default async function RecentPurchase() {
-  const recentPurchase = await api.recentPurchase();
+export default function RecentPurchase({
+  recentOrders = []
+}) {
+  const recentPurchase = (Array.isArray(recentOrders) ? recentOrders : []).map(item => ({
+    id: `#${String(item?.id || "").slice(0, 8).toUpperCase()}`,
+    product: item?.customerName || "Customer",
+    payment: String(item?.status || "Pending").toLowerCase() === "pending" ? "Pending" : "Success",
+    amount: Number(item?.totalAmountUsd || 0)
+  }));
+
   return <Card>
       <FlexBetween px={3} py={2.5}>
         <Typography variant="h5">Recent Purchases</Typography>

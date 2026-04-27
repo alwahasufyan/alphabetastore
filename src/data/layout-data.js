@@ -16,35 +16,35 @@ export const topbarSocialLinks = {
 
 // TOP BAR LANGUAGE OPTIONS
 export const languageOptions = {
+  ar: {
+    title: "AR",
+    value: "ar"
+  },
   en: {
     title: "EN",
     value: "en"
-  },
-  es: {
-    title: "DE",
-    value: "de"
   }
 };
 
 
 // MOBILE NAVIGATION LIST
 export const mobileNavigation = [{
-  title: "Home",
+  title: "الرئيسية",
   icon: "Home",
   href: "/",
   badge: false
 }, {
-  title: "Category",
+  title: "الفئات",
   icon: "CategoryOutlined",
   href: "/mobile-categories",
   badge: false
 }, {
-  title: "Cart",
+  title: "السلة",
   icon: "ShoppingBagOutlined",
   href: "/cart",
   badge: true
 }, {
-  title: "Account",
+  title: "الحساب",
   icon: "User2",
   href: "/profile",
   badge: false
@@ -53,22 +53,22 @@ export const mobileNavigation = [{
 
 // MOBILE NAVIGATION LIST
 export const mobileNavigationTwo = [{
-  title: "Home",
+  title: "الرئيسية",
   Icon: Home,
   href: "/",
   badge: false
 }, {
-  title: "Category",
+  title: "الفئات",
   Icon: CategoryOutlined,
   href: "",
   badge: false
 }, {
-  title: "Cart",
+  title: "السلة",
   Icon: ShoppingBagOutlined,
   href: "/cart",
   badge: true
 }, {
-  title: "Account",
+  title: "الحساب",
   Icon: User2,
   href: "/profile",
   badge: false
@@ -118,6 +118,9 @@ export const footerAboutLinks = [{
   url: "#"
 }];
 export const footerCustomerCareLinks = [{
+  title: "Dashboard",
+  url: "/vendor/dashboard"
+}, {
   title: "Help Center",
   url: "#"
 }, {
@@ -137,4 +140,4 @@ export const footerSocialLinks = {
   youtube: "https://www.instagram.com/",
   google: "https://www.instagram.com/"
 };
-export const footerDescription = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Auctor libero id et, in gravida. Sit diam duis mauris nulla cursus. Erat et lectus vel ut sollicitudin elit at amet.";
+export const footerDescription = "Alphabeta Store delivers a fast, reliable shopping experience built for the Libya market with real-time inventory and secure checkout.";

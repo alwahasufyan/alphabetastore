@@ -1,8 +1,6 @@
 import Switch from "@mui/material/Switch";
 import { styled } from "@mui/material/styles";
 
-
-// STYLED COMPONENT
 const StyledSwitch = styled(Switch)(({
   theme
 }) => ({
@@ -34,6 +32,7 @@ const StyledSwitch = styled(Switch)(({
     backgroundColor: theme.palette.info.main
   }
 }));
-export default function BazaarSwitch(props) {
+
+export default function AppSwitch(props) {
   return <StyledSwitch {...props} />;
 }

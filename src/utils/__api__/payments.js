@@ -1,54 +1,5 @@
 import { cache } from "react";
-const PAYMENT_METHODS = [{
-  id: "1050017AB",
-  exp: "10 / 2025",
-  cvc: "123",
-  user: "Ralf Edward",
-  payment_method: "Mastercard",
-  card_no: "1234 **** **** ****"
-}, {
-  id: "1050017AA",
-  cvc: "123",
-  exp: "08 / 2022",
-  user: "Ralf Edward",
-  payment_method: "Amex",
-  card_no: "1234 **** **** ****"
-}, {
-  id: "1050017AC",
-  cvc: "123",
-  exp: "N/A",
-  user: "Ralf Edward",
-  payment_method: "PayPal",
-  card_no: "ui-lib@email.com"
-}, {
-  id: "1050017AD",
-  cvc: "123",
-  exp: "08 / 2022",
-  user: "Ralf Edward",
-  payment_method: "Visa",
-  card_no: "1234 **** **** ****"
-}, {
-  id: "1050017AE",
-  cvc: "123",
-  exp: "08 / 2022",
-  user: "Ralf Edward",
-  payment_method: "Amex",
-  card_no: "1234 **** **** ****"
-}, {
-  id: "1050017AG",
-  cvc: "123",
-  exp: "N/A",
-  user: "Ralf Edward",
-  payment_method: "PayPal",
-  card_no: "ui-lib@email.com"
-}, {
-  id: "1050017AF",
-  cvc: "123",
-  exp: "08 / 2022",
-  user: "Ralf Edward",
-  payment_method: "Visa",
-  card_no: "1234 **** **** ****"
-}];
+const PAYMENT_METHODS = [];
 const getPayments = cache(async (page = 0) => {
   const PAGE_SIZE = 5;
   const PAGE_NO = page - 1;

@@ -22,6 +22,6 @@ export default function Footer({
           </Link>)}
       </div>
 
-      <p>© Copyright {new Date().getFullYear()} By UI LIB.</p>
+      <p>© Copyright {new Date().getFullYear()} By Alphabeta Store.</p>
     </StyledRoot>;
 }

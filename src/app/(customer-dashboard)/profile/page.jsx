@@ -4,8 +4,8 @@ export const metadata = {
   title: "My Profile - Alphabeta Store",
   description: "Manage your Alphabeta customer profile.",
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "profile", "customer dashboard"]
 };

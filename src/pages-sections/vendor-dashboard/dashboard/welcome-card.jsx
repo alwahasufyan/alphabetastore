@@ -5,7 +5,13 @@ import Typography from "@mui/material/Typography";
 
 // CUSTOM UTILS LIBRARY FUNCTION
 import { currency } from "lib";
-export default function WelcomeCard() {
+export default function WelcomeCard({
+  totals
+}) {
+  const totalRevenue = Number(totals?.totalRevenueUsd || 0);
+  const totalOrders = Number(totals?.totalOrders || 0);
+  const totalProducts = Number(totals?.totalProducts || 0);
+
   return <Card sx={{
     p: 3,
     height: "100%",
@@ -20,24 +26,28 @@ export default function WelcomeCard() {
       <Typography variant="h5" color="info" sx={{
       mb: 0.5
     }}>
-        Good Morning, Maruf!
+        Alphabeta Store Overview
       </Typography>
 
-      <p>Here’s what happening with your store today!</p>
+      <p>Real-time metrics from your production database.</p>
 
       <Typography variant="h3" sx={{
       mt: 3
     }}>
-        15,350.25
+        {totalOrders}
       </Typography>
-      <p>Today’s Visit</p>
+      <p>Total Orders</p>
 
       <Typography variant="h3" sx={{
       mt: 1.5
     }}>
-        {currency(10360.66)}
+        {currency(totalRevenue, 0)}
       </Typography>
-      <p>Today’s total sales</p>
+      <p>Total Revenue</p>
+
+      <Typography variant="body1" sx={{ mt: 1.5 }}>
+        Products: {totalProducts}
+      </Typography>
 
       <Box sx={{
       right: 24,

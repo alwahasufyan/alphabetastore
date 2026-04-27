@@ -32,12 +32,12 @@ export function mapOrderItem(item) {
   return {
     id: item?.id || "",
     productId: item?.productId || "",
-    productName: item?.productName || item?.product?.name || "Product",
+    productName: item?.productName || item?.product?.name || "",
     quantity: Number(item?.quantity || 0),
     unitPrice: Number(item?.unitPrice || 0),
     product: {
       id: item?.product?.id || item?.productId || "",
-      name: item?.productName || item?.product?.name || "Product",
+      name: item?.productName || item?.product?.name || "",
       slug: item?.product?.slug || "",
       imageUrl: normalizeProductImageUrl(item?.product?.imageUrl || FALLBACK_PRODUCT_IMAGE)
     }
@@ -64,7 +64,7 @@ export function mapOrder(order) {
     id: order?.id || "",
     userId: order?.userId || null,
     addressId: order?.addressId || null,
-    fullName: order?.fullName || "Customer",
+    fullName: order?.fullName || "",
     phone: order?.phone || "",
     city: order?.city || "",
     address: order?.address || "",
@@ -83,7 +83,7 @@ export function mapOrder(order) {
     savedAddress: order?.savedAddress || null,
     statusHistory,
     items,
-    paymentMethod: order?.paymentMethod || "Not selected yet"
+    paymentMethod: order?.paymentMethod || ""
   };
 }
 

@@ -91,7 +91,7 @@ export function TicketsPageView() {
   };
 
   return <Fragment>
-      <DashboardHeader title="Support Ticket" Icon={Headset} />
+      <DashboardHeader title="تذاكر الدعم" Icon={Headset} />
 
       {pageError ? <Alert severity="error" sx={{
       mb: 3
@@ -104,22 +104,22 @@ export function TicketsPageView() {
         <Typography variant="h5" sx={{
         mb: 2
       }}>
-          Open a new ticket
+          فتح تذكرة جديدة
         </Typography>
 
         <form onSubmit={handleCreateTicket}>
           <Stack spacing={2}>
-            <TextField name="subject" label="Subject" value={formValues.subject} onChange={handleFieldChange} required fullWidth />
+            <TextField name="subject" label="الموضوع" value={formValues.subject} onChange={handleFieldChange} required fullWidth />
 
-            <TextField select name="priority" label="Priority" value={formValues.priority} onChange={handleFieldChange} fullWidth>
+            <TextField select name="priority" label="الأولوية" value={formValues.priority} onChange={handleFieldChange} fullWidth>
               {TICKET_PRIORITY_OPTIONS.map(option => <MenuItem value={option.value} key={option.value}>{option.label}</MenuItem>)}
             </TextField>
 
-            <TextField name="message" label="Message" value={formValues.message} onChange={handleFieldChange} required fullWidth multiline rows={5} />
+            <TextField name="message" label="الرسالة" value={formValues.message} onChange={handleFieldChange} required fullWidth multiline rows={5} />
 
             <Stack direction="row" justifyContent="flex-end">
               <Button type="submit" variant="contained" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Ticket"}
+                {isSubmitting ? "جاري الإنشاء..." : "إنشاء التذكرة"}
               </Button>
             </Stack>
           </Stack>
@@ -132,7 +132,7 @@ export function TicketsPageView() {
       p: 4,
       textAlign: "center"
     }}>
-          <Typography color="text.secondary">No support tickets yet.</Typography>
+          <Typography color="text.secondary">لا توجد تذاكر دعم حتى الآن.</Typography>
         </Card>}
     </Fragment>;
 }

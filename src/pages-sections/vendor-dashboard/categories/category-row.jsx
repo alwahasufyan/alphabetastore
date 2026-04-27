@@ -10,7 +10,7 @@ import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 
 // GLOBAL CUSTOM COMPONENT
-import BazaarSwitch from "components/BazaarSwitch";
+import AppSwitch from "components/AppSwitch";
 import { apiDelete, apiPatch } from "utils/api";
 
 // STYLED COMPONENTS
@@ -94,7 +94,7 @@ export default function CategoryRow({
       <StyledTableCell align="left">{level ? parentName : "Root"}</StyledTableCell>
 
       <StyledTableCell align="left">
-        <BazaarSwitch color="info" checked={activeCategory} onChange={handleToggleActive} />
+        <AppSwitch color="info" checked={activeCategory} onChange={handleToggleActive} />
       </StyledTableCell>
 
       <StyledTableCell align="center">

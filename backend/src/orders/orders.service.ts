@@ -128,6 +128,14 @@ export class OrdersService {
       0,
     );
 
+    const minimumOrderAmount = await this.getMinimumOrderAmount();
+
+    if (totalAmount < minimumOrderAmount) {
+      throw new BadRequestException(
+        `Minimum order amount is ${minimumOrderAmount}.`,
+      );
+    }
+
     const [order] = await this.prisma.$transaction([
       this.prisma.order.create({
         data: {
@@ -411,5 +419,19 @@ export class OrdersService {
         },
       })),
     };
+  }
+
+  private async getMinimumOrderAmount() {
+    const setting = await this.prisma.systemSetting.findUnique({
+      where: {
+        key: 'min_order',
+      },
+      select: {
+        value: true,
+      },
+    });
+
+    const value = Number(setting?.value || 0);
+    return Number.isFinite(value) && value > 0 ? value : 0;
   }
 }

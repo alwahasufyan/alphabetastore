@@ -1,17 +1,13 @@
-import { CustomersPageView } from "pages-sections/vendor-dashboard/customers/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/dashboard";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
-  title: "Customers - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Customers - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function Customers() {
-  const customers = await api.customers();
-  return <CustomersPageView customers={customers} />;
+  return <FeatureUnavailablePage title="Customers" description="قائمة العملاء الإدارية غير مدعومة بعد في الواجهة الخلفية الحالية. لا يوجد endpoint إداري يعيد جميع العملاء بشكل موثوق." />;
 }

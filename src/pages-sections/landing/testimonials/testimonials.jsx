@@ -15,7 +15,7 @@ const TESTIMONIALS = [{
   company: "TechStart Inc.",
   avatar: "/assets/images/faces/1.jpg",
   rating: 5,
-  testimonial: "Bazaar saved us months of development time. The code quality is exceptional and the design is absolutely stunning. Our e-commerce site looks professional and modern."
+  testimonial: "Alphabeta Store saved us months of development time. The code quality is exceptional and the design is absolutely stunning. Our e-commerce site looks professional and modern."
 }, {
   id: 2,
   name: "Michael Chen",
@@ -72,11 +72,11 @@ export default function Testimonials() {
           xs: 28,
           md: 36
         }} mb={1}>
-            What Customers Say About Bazaar
+            What Customers Say About Alphabeta Store
           </Typography>
 
           <Typography variant="h6" color="text.secondary" maxWidth={600} mx="auto">
-            Join thousands of satisfied customers who chose Bazaar for their e-commerce projects
+            Join thousands of satisfied customers who chose Alphabeta Store for their e-commerce projects
           </Typography>
         </Box>
 

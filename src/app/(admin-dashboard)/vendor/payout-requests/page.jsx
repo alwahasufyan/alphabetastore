@@ -1,17 +1,13 @@
-import { VendorPayoutRequestsPageView } from "pages-sections/vendor-dashboard/v-payout-request/page-view";
-
-// API FUNCTIONS
-import api from "utils/__api__/vendor";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
-  title: "Payout Requests - Bazaar Next.js E-commerce Template",
-  description: `Bazaar is a React Next.js E-commerce template. Build SEO friendly Online store, delivery app and Multi vendor store`,
+  title: "Payout Requests - Alphabeta Store",
+  description: `Alphabeta Store for the Libya market.`,
   authors: [{
-    name: "UI-LIB",
-    url: "https://ui-lib.com"
+    name: "Alphabeta Store",
+    url: "https://alphabeta.com"
   }],
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function PayoutRequests() {
-  const requests = await api.getAllPayoutRequests();
-  return <VendorPayoutRequestsPageView payoutRequests={requests} />;
+  return <FeatureUnavailablePage title="Payout Requests" description="طلبات سحب البائع غير متاحة لأن مسار API المطلوب غير موجود في backend الحالي." />;
 }
