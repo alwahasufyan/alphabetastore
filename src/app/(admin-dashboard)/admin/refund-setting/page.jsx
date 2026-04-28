@@ -1,4 +1,4 @@
-import { RefundSettingPageView } from "pages-sections/vendor-dashboard/refund-setting/page-view";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
   title: "Refund Setting - Alphabeta Store",
   description: `Alphabeta Store for the Libya market.`,
@@ -9,5 +9,5 @@ export const metadata = {
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 export default async function RefundSetting() {
-  return <RefundSettingPageView />;
+  return <FeatureUnavailablePage title="Refund Setting" description="إعدادات الاسترجاع الحالية مجرد واجهة قالب غير مربوطة بإعدادات فعلية في الواجهة الخلفية، لذلك تم إخفاؤها من التنقل وتعطيلها كميزة غير مكتملة." />;
 }

@@ -1,4 +1,5 @@
 import Card from "@mui/material/Card";
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
@@ -47,6 +48,8 @@ export default function RecentPurchase({
         </Button>
       </FlexBetween>
 
-      <DataListTable dataList={recentPurchase} tableHeading={tableHeading} type="RECENT_PURCHASE" />
+      {recentPurchase.length ? <DataListTable dataList={recentPurchase} tableHeading={tableHeading} type="RECENT_PURCHASE" /> : <Alert severity="info" sx={{ mx: 3, mb: 3 }}>
+          No recent orders yet.
+        </Alert>}
     </Card>;
 }

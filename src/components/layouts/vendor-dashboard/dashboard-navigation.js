@@ -45,68 +45,22 @@ export const navigation = [{
   icon: duotone.ElementHub,
   path: "/admin/tickets"
 }, {
-  name: "Customers",
-  icon: duotone.Customers,
-  path: "/admin/customers"
-}, {
-  name: "Refunds",
-  icon: duotone.Refund,
-  children: [{
-    name: "Refund Request",
-    path: "/admin/refund-request"
-  }, {
-    name: "Refund Settings",
-    path: "/admin/refund-setting"
-  }]
-}, {
   name: "Sellers",
   icon: duotone.Seller,
   children: [{
-    name: "Seller List",
-    path: "/admin/sellers"
-  }, {
     name: "Seller Package",
     path: "/admin/seller-package"
-  }, {
-    name: "Package Payments",
-    path: "/admin/package-payments"
-  }, {
-    name: "Earning History",
-    path: "/admin/earning-history"
-  }, {
-    name: "Payouts",
-    path: "/admin/payouts"
-  }, {
-    name: "Payout Request",
-    path: "/admin/payout-requests"
   }]
 }, {
   type: "label",
   label: "Vendor"
 }, {
-  name: "Earnings",
+  name: "Payments",
   icon: duotone.ProjectChart,
   children: [{
-    name: "Earning History",
-    path: "/vendor/earning-history"
-  }, {
-    name: "Payouts",
-    path: "/vendor/payouts"
-  }, {
-    name: "Payout Request",
-    path: "/vendor/payout-requests"
-  }, {
     name: "Payout Settings",
     path: "/vendor/payout-settings"
   }]
-}, {
-  name: "Refund Request",
-  icon: duotone.Refund,
-  path: "/vendor/refund-request"
-}, {
-  name: "Reviews",
-  icon: duotone.Review,
-  path: "/vendor/reviews"
 }, {
   name: "Shop Setting",
   icon: duotone.SiteSetting,

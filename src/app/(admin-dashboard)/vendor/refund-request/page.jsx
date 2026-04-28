@@ -1,5 +1,4 @@
-import { RefundRequestPageView } from "pages-sections/vendor-dashboard/refund-request/page-view";
-import { API_BASE_URL } from "utils/api";
+import FeatureUnavailablePage from "pages-sections/vendor-dashboard/feature-unavailable-page";
 export const metadata = {
   title: "Refund Request - Alphabeta Store",
   description: `Alphabeta Store for the Libya market.`,
@@ -10,29 +9,6 @@ export const metadata = {
   keywords: ["e-commerce", "e-commerce template", "next.js", "react"]
 };
 
-async function getRefundRequests() {
-  try {
-    const response = await fetch(`${API_BASE_URL}/admin/refund-requests`, {
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-
-    if (data?.success === true) {
-      return Array.isArray(data.data) ? data.data : [];
-    }
-
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
 export default async function RefundRequest() {
-  const requests = await getRefundRequests();
-  return <RefundRequestPageView requests={requests} />;
+  return <FeatureUnavailablePage title="Refund Request" description="طلبات الاسترجاع الخاصة بالبائع غير مفعلة حاليًا لأن المنصة لا توفر عقدًا خلفيًا مكتملًا لهذه الميزة." />;
 }

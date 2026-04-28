@@ -1,4 +1,5 @@
 import Card from "@mui/material/Card";
+import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 
@@ -29,15 +30,11 @@ export default function StockOutProducts({
   outOfStockCount = 0,
   recentOrders = []
 }) {
-  const stockOutProducts = [{
+  const stockOutProducts = outOfStockCount > 0 ? [{
     product: "Out of stock products",
     stock: String(outOfStockCount),
     amount: 0
-  }, {
-    product: "Recent orders snapshot",
-    stock: String(Array.isArray(recentOrders) ? recentOrders.length : 0),
-    amount: (Array.isArray(recentOrders) ? recentOrders : []).reduce((sum, item) => sum + Number(item?.totalAmountUsd || 0), 0)
-  }];
+  }] : [];
 
   return <Card>
       <FlexBetween px={3} py={2.5}>
@@ -47,6 +44,8 @@ export default function StockOutProducts({
         </Button>
       </FlexBetween>
 
-      <DataListTable dataList={stockOutProducts} tableHeading={tableHeading} type="STOCK_OUT" />
+      {stockOutProducts.length ? <DataListTable dataList={stockOutProducts} tableHeading={tableHeading} type="STOCK_OUT" /> : <Alert severity="success" sx={{ mx: 3, mb: 3 }}>
+          No out-of-stock products right now.
+        </Alert>}
     </Card>;
 }

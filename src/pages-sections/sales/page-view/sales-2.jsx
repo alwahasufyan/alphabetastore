@@ -14,10 +14,12 @@ import ProductPagination from "../product-pagination";
 
 export default function SalesTwoPageView({
   products,
-  page
+  page,
+  pageSize,
+  totalProducts
 }) {
   return <Container className="mt-2">
       <ProductList products={products} />
-      <ProductPagination page={page} perPage={20} totalProducts={100} />
+      <ProductPagination page={page} perPage={pageSize} totalProducts={totalProducts} />
     </Container>;
 }

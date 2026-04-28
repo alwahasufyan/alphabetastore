@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Alert from "@mui/material/Alert";
 import Grid from "@mui/material/Grid";
 import Skeleton from "@mui/material/Skeleton";
 import { useTheme } from "@mui/material/styles";
@@ -43,6 +44,14 @@ export default function Sales({
     name: "Monthly Orders",
     data: monthlyOrders.length ? monthlyOrders : [0]
   }];
+
+  const hasChartData = monthlySales.some(value => value > 0) || monthlyOrders.some(value => value > 0) || totalRevenue > 0 || totalOrders > 0 || activeProducts > 0;
+
+  if (!hasChartData) {
+    return <Alert severity="info">
+        No sales or order analytics available yet.
+      </Alert>;
+  }
 
   return <div>
       <Grid container spacing={3}>

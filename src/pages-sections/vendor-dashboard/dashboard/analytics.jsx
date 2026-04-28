@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 
 // MUI
+import Alert from "@mui/material/Alert";
 import Card from "@mui/material/Card";
 import Skeleton from "@mui/material/Skeleton";
 import MenuItem from "@mui/material/MenuItem";
@@ -56,6 +57,8 @@ export default function Analytics({
     data: ordersData
   }];
 
+  const hasData = salesData.some(value => value > 0) || ordersData.some(value => value > 0);
+
   return <Card sx={{
     p: 3
   }}>
@@ -69,6 +72,8 @@ export default function Analytics({
         </StyledSelect>
       </FlexBetween>
 
-      <ApexChart type="bar" height={300} series={series} options={analyticsChartOptions(theme, categories)} />
+      {hasData ? <ApexChart type="bar" height={300} series={series} options={analyticsChartOptions(theme, categories)} /> : <Alert severity="info" sx={{ mt: 3 }}>
+          No monthly analytics available yet.
+        </Alert>}
     </Card>;
 }

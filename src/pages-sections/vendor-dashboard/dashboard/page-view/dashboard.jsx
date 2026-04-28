@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Alert from "@mui/material/Alert";
+import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
 import Grid from "@mui/material/Grid";
 import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
 // LOCAL CUSTOM COMPONENTS
 import Sales from "../sales";
@@ -51,6 +53,22 @@ export default function DashboardPageView() {
     };
   }, []);
 
+  const hasActivity = useMemo(() => {
+    const totals = summary.totals || {};
+    const totalSignals = [
+      totals.totalProducts,
+      totals.totalCategories,
+      totals.totalOrders,
+      totals.outOfStockProducts,
+      totals.totalRevenueUsd,
+      totals.totalTickets,
+      totals.openTickets,
+      totals.inProgressTickets
+    ].some(value => Number(value || 0) > 0);
+
+    return totalSignals || summary.recentOrders.length > 0 || summary.monthly.some(item => Number(item?.salesUsd || 0) > 0 || Number(item?.orderCount || 0) > 0);
+  }, [summary]);
+
   const cardList = useMemo(() => [{
     id: 1,
     title: "Products",
@@ -88,9 +106,27 @@ export default function DashboardPageView() {
       </Stack>;
   }
 
-  return <div className="pt-2 pb-2">
-      {pageError ? <Alert severity="error" sx={{ mb: 3 }}>{pageError}</Alert> : null}
+  if (pageError) {
+    return <Card sx={{ p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>{pageError}</Alert>
+        <Typography color="text.secondary">
+          لا يمكن عرض إحصاءات لوحة التحكم حاليًا لأن تحميل البيانات الفعلية فشل.
+        </Typography>
+      </Card>;
+  }
 
+  if (!hasActivity) {
+    return <Card sx={{ p: 3 }}>
+        <Typography variant="h5" sx={{ mb: 1 }}>
+          لا توجد بيانات تشغيلية بعد
+        </Typography>
+        <Typography color="text.secondary">
+          ستظهر إحصاءات لوحة التحكم هنا بمجرد إضافة منتجات أو استقبال طلبات أو تسجيل نشاط فعلي في النظام.
+        </Typography>
+      </Card>;
+  }
+
+  return <div className="pt-2 pb-2">
       <Grid container spacing={3}>
         {/* WELCOME CARD SECTION */}
         <Grid size={{

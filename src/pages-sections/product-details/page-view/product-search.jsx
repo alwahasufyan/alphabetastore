@@ -81,29 +81,51 @@ export default function ProductSearchPageView() {
   useEffect(() => {
     let active = true;
 
+    const loadFilters = async () => {
+      try {
+        const categoriesResponse = await fetchCategories();
+
+        if (!active) return;
+
+        setFilters(buildProductFilters(categoriesResponse));
+      } catch {
+        if (!active) return;
+
+        setFilters(EMPTY_FILTERS);
+      }
+    };
+
+    loadFilters();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
     const loadProducts = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const [categoriesResponse, productsResponse] = await Promise.all([fetchCategories(), fetchProductsPage({
+        const productsResponse = await fetchProductsPage({
           q: query,
           category,
           sort,
           status: "ACTIVE",
           page: Number(page) || 1,
           limit: PAGE_SIZE
-        })]);
+        });
 
         if (!active) return;
 
-        setFilters(buildProductFilters(categoriesResponse));
         setProducts(productsResponse.products);
         setPagination(productsResponse.pagination);
       } catch {
         if (!active) return;
 
-        setFilters(EMPTY_FILTERS);
         setProducts([]);
         setPagination({
           page: 1,

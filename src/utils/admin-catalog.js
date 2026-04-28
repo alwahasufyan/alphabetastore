@@ -71,13 +71,42 @@ function buildAdminProductsQuery(filters = {}) {
     params.set("status", filters.status);
   }
 
+  if (Number(filters.page) > 0) {
+    params.set("page", String(filters.page));
+  }
+
+  if (Number(filters.limit) > 0) {
+    params.set("limit", String(filters.limit));
+  }
+
   const queryString = params.toString();
   return queryString ? `?${queryString}` : "";
 }
 
 export async function fetchAdminProducts(filters = {}) {
   const data = await apiGet(`/products${buildAdminProductsQuery(filters)}`);
-  return ensureArray(data).map(normalizeAdminProduct);
+
+  if (Array.isArray(data)) {
+    return {
+      items: data.map(normalizeAdminProduct),
+      pagination: {
+        page: 1,
+        limit: data.length || Number(filters.limit) || 10,
+        total: data.length,
+        totalPages: 1
+      }
+    };
+  }
+
+  return {
+    items: ensureArray(data?.items).map(normalizeAdminProduct),
+    pagination: {
+      page: Number(data?.pagination?.page || filters.page || 1),
+      limit: Number(data?.pagination?.limit || filters.limit || 10),
+      total: Number(data?.pagination?.total || 0),
+      totalPages: Number(data?.pagination?.totalPages || 1)
+    }
+  };
 }
 
 export async function fetchAdminProductBySlug(slug) {

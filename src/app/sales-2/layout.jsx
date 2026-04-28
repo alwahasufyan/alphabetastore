@@ -8,6 +8,9 @@ import SalesNavbar from "pages-sections/sales/sales-navbar";
 // SALES API FUNCTIONS
 import salesApi from "utils/__api__/sales";
 import layoutApi from "utils/__api__/layout";
+
+export const dynamic = "force-dynamic";
+
 export default async function Layout({
   children
 }) {

@@ -2,6 +2,9 @@ import ShopLayout1 from "components/layouts/shop-layout-1";
 
 // API FUNCTIONS
 import api from "utils/__api__/layout";
+
+export const dynamic = "force-dynamic";
+
 export default async function Layout({
   children
 }) {

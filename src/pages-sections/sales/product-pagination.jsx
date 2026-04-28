@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 // MUI
 import Pagination from "@mui/material/Pagination";
@@ -26,11 +26,18 @@ export default memo(function ProductPagination({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const handleChangePage = (_, page) => {
-    const searchParams = new URLSearchParams();
-    if (page === 1) searchParams.delete("page");else searchParams.set("page", page.toString());
-    router.push(`${pathname}?${searchParams.toString()}`);
+    const params = new URLSearchParams(searchParams);
+    if (page === 1) params.delete("page");else params.set("page", page.toString());
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
   };
+  if (totalProducts <= perPage) return <FlexBetween flexWrap="wrap" my={8}>
+      <Typography fontWeight={500} variant="body1">
+        {renderProductCount(page, perPage, totalProducts)}
+      </Typography>
+    </FlexBetween>;
   return <FlexBetween flexWrap="wrap" my={8}>
       <Typography fontWeight={500} variant="body1">
         {renderProductCount(page, perPage, totalProducts)}

@@ -18,13 +18,15 @@ import OverlayScrollbar from "components/overlay-scrollbar";
 import { TableHeader, TablePagination } from "components/data-table";
 
 // GLOBAL CUSTOM HOOK
-import useMuiTable from "hooks/useMuiTable";
+import { getComparator, stableSort } from "hooks/useMuiTable";
 
 //  LOCAL CUSTOM COMPONENT
 import ProductRow from "../product-row";
 import SearchArea from "../../search-box";
 import PageWrapper from "../../page-wrapper";
 import { ACTIVE_STATUS, ALL_PRODUCT_STATUS, INACTIVE_STATUS, fetchAdminProducts, mapAdminProduct } from "utils/admin-catalog";
+
+const PAGE_SIZE = 10;
 
 // TABLE HEADING DATA LIST
 const tableHeading = [{
@@ -62,37 +64,83 @@ export default function ProductsPageView({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q")?.trim() || "";
+  const currentPage = Math.max(Number(searchParams.get("page") || 1), 1);
   const statusFilter = searchParams.get("status") || ALL_PRODUCT_STATUS;
   const [products, setProducts] = useState(Array.isArray(initialProducts) ? initialProducts : []);
+  const [pagination, setPagination] = useState({
+    page: currentPage,
+    limit: PAGE_SIZE,
+    total: Array.isArray(initialProducts) ? initialProducts.length : 0,
+    totalPages: 1
+  });
   const [isLoading, setIsLoading] = useState(!initialProducts?.length);
   const [pageError, setPageError] = useState("");
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("name");
 
   const loadProducts = useCallback(async () => {
     setIsLoading(true);
     setPageError("");
 
     try {
-      const data = await fetchAdminProducts({
+      const response = await fetchAdminProducts({
         q: searchTerm,
-        status: statusFilter
+        status: statusFilter,
+        page: currentPage,
+        limit: PAGE_SIZE
       });
-      setProducts(Array.isArray(data) ? data : []);
+
+      setProducts(Array.isArray(response?.items) ? response.items : []);
+      setPagination(response?.pagination || {
+        page: currentPage,
+        limit: PAGE_SIZE,
+        total: 0,
+        totalPages: 1
+      });
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Failed to load products");
+      setProducts([]);
+      setPagination({
+        page: currentPage,
+        limit: PAGE_SIZE,
+        total: 0,
+        totalPages: 1
+      });
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm, statusFilter]);
+  }, [currentPage, searchTerm, statusFilter]);
 
   useEffect(() => {
     loadProducts();
   }, [loadProducts]);
 
-  const filteredProducts = useMemo(() => products.map(mapAdminProduct), [products]);
+  const filteredProducts = useMemo(() => stableSort(products.map(mapAdminProduct), getComparator(order, orderBy)), [order, orderBy, products]);
+
+  const handleRequestSort = property => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (_, nextPage) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (nextPage <= 1) {
+      params.delete("page");
+    } else {
+      params.set("page", String(nextPage));
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  };
 
   const handleStatusChange = event => {
     const params = new URLSearchParams(searchParams);
     const nextStatus = event.target.value;
+
+    params.delete("page");
 
     if (nextStatus === ALL_PRODUCT_STATUS) {
       params.delete("status");
@@ -103,17 +151,6 @@ export default function ProductsPageView({
     const queryString = params.toString();
     router.push(queryString ? `${pathname}?${queryString}` : pathname);
   };
-
-  const {
-    order,
-    orderBy,
-    rowsPerPage,
-    filteredList,
-    handleChangePage,
-    handleRequestSort
-  } = useMuiTable({
-    listData: filteredProducts
-  });
 
   return <PageWrapper title="Product List">
       <SearchArea buttonText="Add Product" url="/admin/products/create" searchPlaceholder="Search Product..." extraContent={<TextField select size="small" label="Status" value={statusFilter} onChange={handleStatusChange} sx={{
@@ -143,8 +180,12 @@ export default function ProductsPageView({
                         <CircularProgress color="info" />
                       </Stack>
                     </td>
-                  </tr> : filteredList.length ? filteredList.map(product => <ProductRow key={product.id} product={product} onChanged={loadProducts} onDeleted={deletedId => {
+                  </tr> : filteredProducts.length ? filteredProducts.map(product => <ProductRow key={product.id} product={product} onChanged={loadProducts} onDeleted={deletedId => {
                 setProducts(current => current.filter(item => item.id !== deletedId));
+                setPagination(current => ({
+                  ...current,
+                  total: Math.max(0, current.total - 1)
+                }));
               }} />) : <tr>
                     <td colSpan={5}>
                       <Stack alignItems="center" justifyContent="center" py={6}>
@@ -158,7 +199,7 @@ export default function ProductsPageView({
         </OverlayScrollbar>
 
         <Stack alignItems="center" my={4}>
-          <TablePagination onChange={handleChangePage} count={Math.ceil(filteredProducts.length / rowsPerPage)} />
+          <TablePagination onChange={handleChangePage} page={pagination.page} count={Math.max(1, Number(pagination.totalPages || 1))} />
         </Stack>
       </Card>
     </PageWrapper>;
