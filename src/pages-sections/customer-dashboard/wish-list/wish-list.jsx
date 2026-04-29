@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -14,7 +14,7 @@ import Pagination from "../pagination";
 import DashboardHeader from "../dashboard-header";
 import ProductCard17 from "components/product-cards/product-card-17";
 import WishlistToggleButton from "components/wishlist/wishlist-toggle-button";
-import { fetchWishlistItems } from "utils/wishlist";
+import { fetchWishlistItemsPage } from "utils/wishlist";
 
 
 // ==================================================================
@@ -26,25 +26,53 @@ export default function WishListPageView({
   initialPage = 1
 }) {
   const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get("page") || initialPage || 1);
+  const pageFromQuery = Number.parseInt(searchParams.get("page") || "", 10);
+  const currentPage = Number.isFinite(pageFromQuery) && pageFromQuery > 0 ? pageFromQuery : Math.max(Number(initialPage) || 1, 1);
   const [items, setItems] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: currentPage,
+    limit: 6,
+    total: 0,
+    totalPages: 1
+  });
   const [pageError, setPageError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const pageSize = 6;
 
   useEffect(() => {
     let cancelled = false;
 
     const loadWishlist = async () => {
       try {
+        if (!cancelled) {
+          setIsLoading(true);
+        }
         setPageError("");
-        const nextItems = await fetchWishlistItems();
+        const response = await fetchWishlistItemsPage({
+          page: currentPage,
+          limit: pageSize
+        });
 
         if (!cancelled) {
-          setItems(nextItems);
+          setItems(Array.isArray(response?.items) ? response.items : []);
+          setPagination(response?.pagination || {
+            page: currentPage,
+            limit: pageSize,
+            total: 0,
+            totalPages: 1
+          });
         }
       } catch (error) {
         if (!cancelled) {
           setPageError(error instanceof Error ? error.message : "Failed to load wishlist.");
+          setItems([]);
+          setPagination({
+            page: currentPage,
+            limit: pageSize,
+            total: 0,
+            totalPages: 1
+          });
         }
       } finally {
         if (!cancelled) {
@@ -58,14 +86,9 @@ export default function WishListPageView({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [currentPage]);
 
-  const pageSize = 6;
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
-  const paginatedItems = useMemo(() => {
-    const offset = (Math.max(currentPage, 1) - 1) * pageSize;
-    return items.slice(offset, offset + pageSize);
-  }, [currentPage, items]);
+  const totalPages = Math.max(1, Number(pagination.totalPages || 1));
 
   return <Fragment>
       <DashboardHeader title="قائمة المفضلة" Icon={Favorite} />
@@ -78,10 +101,10 @@ export default function WishListPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
-      {!isLoading && !pageError && paginatedItems.length === 0 ? <Alert severity="info">قائمة المفضلة فارغة حاليًا.</Alert> : null}
+      {!isLoading && !pageError && items.length === 0 ? <Alert severity="info">قائمة المفضلة فارغة حاليًا.</Alert> : null}
 
       <Grid container spacing={3}>
-        {!isLoading && !pageError ? paginatedItems.map(item => <Grid size={{
+        {!isLoading && !pageError ? items.map(item => <Grid size={{
         lg: 4,
         sm: 6,
         xs: 12
@@ -93,11 +116,15 @@ export default function WishListPageView({
         }} onChange={nextValue => {
           if (!nextValue) {
             setItems(currentItems => currentItems.filter(currentItem => currentItem.id !== item.id));
+            setPagination(current => ({
+              ...current,
+              total: Math.max(0, current.total - 1)
+            }));
           }
         }} />
           </Grid>) : null}
       </Grid>
 
-      <Pagination count={totalPages} />
+      <Pagination count={totalPages} page={Math.max(currentPage, 1)} />
     </Fragment>;
 }

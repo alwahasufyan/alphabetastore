@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 
-// MUI
 import Box from "@mui/material/Box";
 import Menu from "@mui/material/Menu";
 import Avatar from "@mui/material/Avatar";
@@ -14,32 +15,32 @@ import Typography from "@mui/material/Typography";
 
 import { useAuth } from "contexts/AuthContext";
 
-
-// STYLED COMPONENT
-const Divider = styled("div")(({
-  theme
-}) => ({
+const Divider = styled("div")(({ theme }) => ({
   margin: "0.5rem 0",
   border: `1px dashed ${theme.palette.grey[200]}`
 }));
+
 export default function AccountPopover() {
   const router = useRouter();
-  const { logout } = useAuth();
+  const { t } = useTranslation();
+  const { logout, user } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const handleClose = () => setAnchorEl(null);
+  const displayName = String(user?.name || "Alphabeta Admin").trim() || "Alphabeta Admin";
+  const displayRole = user?.role === "ADMIN" ? t("adminRole") : user?.role === "CUSTOMER" ? t("customerRole") : String(user?.role || t("adminRole"));
 
   const handleLogout = async () => {
     handleClose();
     await logout();
-    router.push("/login");
+    window.location.assign("/login");
   };
 
   return <div>
       <IconButton sx={{
       padding: 0
-    }} aria-haspopup="true" onClick={e => setAnchorEl(e.currentTarget)} aria-expanded={open ? "true" : undefined} aria-controls={open ? "account-menu" : undefined}>
-        <Avatar alt="Remy Sharp" src="/assets/images/avatars/001-man.svg" />
+    }} aria-haspopup="true" onClick={event => setAnchorEl(event.currentTarget)} aria-expanded={open ? "true" : undefined} aria-controls={open ? "account-menu" : undefined}>
+        <Avatar alt={displayName} src="/assets/images/avatars/001-man.svg" />
       </IconButton>
 
       <Menu open={open} id="account-menu" anchorEl={anchorEl} onClose={handleClose} onClick={handleClose} transformOrigin={{
@@ -68,7 +69,7 @@ export default function AccountPopover() {
             zIndex: 0,
             width: 10,
             height: 10,
-            content: '""',
+            content: '\"\"',
             display: "block",
             position: "absolute",
             borderTop: "1px solid",
@@ -81,21 +82,21 @@ export default function AccountPopover() {
       }
     }}>
         <Box px={2} pt={1}>
-          <Typography variant="h6">Gage Paquette</Typography>
+          <Typography variant="h6">{displayName}</Typography>
           <Typography variant="body1" sx={{
           fontSize: 12,
           color: "grey.500"
         }}>
-            Admin
+            {displayRole}
           </Typography>
         </Box>
 
         <Divider />
-        <MenuItem>Profile</MenuItem>
-        <MenuItem>My Orders</MenuItem>
-        <MenuItem>Settings</MenuItem>
+        <MenuItem component={Link} href="/vendor/account-settings">{t("My Profile")}</MenuItem>
+        <MenuItem component={Link} href="/admin/orders">{t("My Orders")}</MenuItem>
+        <MenuItem component={Link} href="/vendor/site-settings">{t("siteSettingsTitle")}</MenuItem>
         <Divider />
-        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+        <MenuItem onClick={handleLogout}>{t("Logout")}</MenuItem>
       </Menu>
     </div>;
 }

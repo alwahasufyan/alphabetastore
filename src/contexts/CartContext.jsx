@@ -34,7 +34,7 @@ function normalizeCart(apiCart) {
   const items = Array.isArray(apiCart?.items) ? apiCart.items.map(item => ({
     id: item.id,
     productId: item.productId,
-    slug: item.product?.slug || "",
+    slug: item.product?.slug || item.product?.id || item.productId || "",
     title: item.product?.name || "Product",
     thumbnail: normalizeProductImageUrl(item.product?.imageUrl || FALLBACK_PRODUCT_IMAGE),
     price: Number(item.unitPrice || 0),

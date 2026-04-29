@@ -87,9 +87,60 @@ export function mapOrder(order) {
   };
 }
 
+function buildOrdersQuery(filters = {}) {
+  const params = new URLSearchParams();
+  const query = filters.q?.trim();
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  if (Number(filters.page) > 0) {
+    params.set("page", String(filters.page));
+  }
+
+  if (Number(filters.limit) > 0) {
+    params.set("limit", String(filters.limit));
+  }
+
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : "";
+}
+
+function normalizePaginatedOrdersResponse(data, filters = {}) {
+  if (Array.isArray(data)) {
+    return {
+      items: data.map(mapOrder),
+      pagination: {
+        page: Number(filters.page || 1),
+        limit: Number(filters.limit || data.length || 10),
+        total: data.length,
+        totalPages: 1
+      }
+    };
+  }
+
+  const items = ensureArray(data?.items);
+
+  return {
+    items: items.map(mapOrder),
+    pagination: {
+      page: Number(data?.pagination?.page || filters.page || 1),
+      limit: Number(data?.pagination?.limit || filters.limit || 10),
+      total: Number(data?.pagination?.total || items.length),
+      totalPages: Number(data?.pagination?.totalPages || 1)
+    }
+  };
+}
+
 export async function fetchCustomerOrders() {
   const data = await apiGet("/orders/my");
   return ensureArray(data).map(mapOrder);
+}
+
+export async function fetchCustomerOrdersPage(filters = {}) {
+  const data = await apiGet(`/orders/my${buildOrdersQuery(filters)}`);
+  return normalizePaginatedOrdersResponse(data, filters);
 }
 
 export async function fetchCustomerOrderById(id) {
@@ -100,6 +151,11 @@ export async function fetchCustomerOrderById(id) {
 export async function fetchAdminOrders() {
   const data = await apiGet("/orders");
   return ensureArray(data).map(mapOrder);
+}
+
+export async function fetchAdminOrdersPage(filters = {}) {
+  const data = await apiGet(`/orders${buildOrdersQuery(filters)}`);
+  return normalizePaginatedOrdersResponse(data, filters);
 }
 
 export async function fetchAdminOrderById(id) {

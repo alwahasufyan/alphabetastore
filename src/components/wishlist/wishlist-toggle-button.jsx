@@ -34,7 +34,7 @@ export default function WishlistToggleButton({
     event.stopPropagation();
 
     if (!isLoggedIn()) {
-      router.push("/login");
+      window.location.assign("/login");
       return;
     }
 

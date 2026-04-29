@@ -19,7 +19,8 @@ export default function AuthGuard({
   useEffect(() => {
     if (!loading && !isAuthenticated) {
       const nextPath = pathname || "/";
-      router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+      window.location.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+      return;
     }
 
     if (!loading && isAuthenticated && allowedRoles && user && !hasRoleAccess) {

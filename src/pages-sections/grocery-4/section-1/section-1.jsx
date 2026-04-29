@@ -1,15 +1,19 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import dynamic from "next/dynamic";
 import Box from "@mui/material/Box";
 
 // LOCAL CUSTOM COMPONENTS
 import StoryItem from "components/stories/story-item";
-import StoryViewer from "components/stories/story-viewer";
 import StoryContent from "components/stories/story-content";
 
 // GLOBAL CUSTOM COMPONENTS
 import { Carousel, CarouselArrows, useCarousel } from "components/slider";
+
+const StoryViewer = dynamic(() => import("components/stories/story-viewer"), {
+  ssr: false
+});
 
 // CUSTOM DATA MODEL
 
@@ -71,6 +75,6 @@ export default function Section1({
         <CarouselArrows onClickNext={arrows.onClickNext} onClickPrev={arrows.onClickPrev} disableNext={arrows.disableNext} disablePrev={arrows.disablePrev} />
       </Box>
 
-      <StoryViewer open={open} stories={storiesContent} handleClose={handleClose} currentIndex={startStory} />
+      {open ? <StoryViewer open={open} stories={storiesContent} handleClose={handleClose} currentIndex={startStory} /> : null}
     </div>;
 }

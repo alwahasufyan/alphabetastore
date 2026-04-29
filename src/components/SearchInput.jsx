@@ -18,14 +18,18 @@ const StyledInputBase = styled(InputBase)(({
   [theme.breakpoints.down("sm")]: {
     maxWidth: "100%"
   },
-  "::placeholder": {
+  "& input::placeholder": {
     color: theme.palette.text.disabled
   }
 }));
 export default function SearchInput(props) {
+  const {
+    sx,
+    ...rest
+  } = props;
+
   return <StyledInputBase startAdornment={<Search sx={{
     fontSize: 19,
-    mr: 1,
-    ...props.sx
-  }} />} {...props} />;
+    mr: 1
+  }} />} sx={sx} {...rest} />;
 }

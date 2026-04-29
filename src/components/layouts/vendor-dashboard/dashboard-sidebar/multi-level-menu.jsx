@@ -102,7 +102,7 @@ export default function MultiLevelMenu() {
   const handleLogout = async () => {
     handleCloseMobileSidebar();
     await logout();
-    router.push("/login");
+    window.location.assign("/login");
   };
 
   const renderLevels = data => {

@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { JwtPayload } from '../auth/types/jwt-payload.type';
 import { CreateWishlistItemDto } from './dto/create-wishlist-item.dto';
+import { FindWishlistQueryDto } from './dto/find-wishlist-query.dto';
 import { WishlistService } from './wishlist.service';
 
 type WishlistRequest = {
@@ -15,8 +16,8 @@ export class WishlistController {
   constructor(private readonly wishlistService: WishlistService) {}
 
   @Get()
-  findMyWishlist(@Req() request: WishlistRequest) {
-    return this.wishlistService.findAll(request.user.sub);
+  findMyWishlist(@Req() request: WishlistRequest, @Query() query: FindWishlistQueryDto) {
+    return this.wishlistService.findAll(request.user.sub, query);
   }
 
   @Post()

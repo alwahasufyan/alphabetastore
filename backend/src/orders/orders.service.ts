@@ -3,6 +3,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { OrderPaymentStatus, OrderStatus, PaymentMethodCode } from '../prisma/prisma-client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { FindOrdersQueryDto } from './dto/find-orders-query.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 type OrderIdentity = {
@@ -108,6 +109,15 @@ const cartForOrderInclude = {
 type CartForOrder = any;
 
 type OrderWithRelations = any;
+const ORDER_STATUS_VALUES = Object.values(OrderStatus) as Array<
+  (typeof OrderStatus)[keyof typeof OrderStatus]
+>;
+
+function isUuidLike(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
 
 @Injectable()
 export class OrdersService {
@@ -184,15 +194,8 @@ export class OrdersService {
     return this.serializeOrder(order);
   }
 
-  async findAll() {
-    const orders = await this.prisma.order.findMany({
-      include: orderInclude,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return orders.map((order: OrderWithRelations) => this.serializeOrder(order));
+  async findAll(query: FindOrdersQueryDto = {}) {
+    return this.findManyWithQuery({}, query);
   }
 
   async findOne(id: string) {
@@ -203,18 +206,8 @@ export class OrdersService {
     });
   }
 
-  async findMine(userId: string) {
-    const orders = await this.prisma.order.findMany({
-      where: {
-        userId,
-      },
-      include: orderInclude,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return orders.map((order: OrderWithRelations) => this.serializeOrder(order));
+  async findMine(userId: string, query: FindOrdersQueryDto = {}) {
+    return this.findManyWithQuery({ userId }, query);
   }
 
   async findOneForUser(id: string, userId: string, isAdmin: boolean) {
@@ -433,5 +426,106 @@ export class OrdersService {
 
     const value = Number(setting?.value || 0);
     return Number.isFinite(value) && value > 0 ? value : 0;
+  }
+
+  private async findManyWithQuery(baseWhere: Record<string, unknown>, query: FindOrdersQueryDto) {
+    const where = {
+      ...baseWhere,
+      ...this.buildSearchWhere(query.q),
+    };
+
+    if (!this.shouldPaginate(query)) {
+      const orders = await this.prisma.order.findMany({
+        where,
+        include: orderInclude,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      return orders.map((order: OrderWithRelations) => this.serializeOrder(order));
+    }
+
+    const page = Number(query.page || 1);
+    const limit = Number(query.limit || 10);
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        include: orderInclude,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      items: orders.map((order: OrderWithRelations) => this.serializeOrder(order)),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+    };
+  }
+
+  private shouldPaginate(query: FindOrdersQueryDto) {
+    return Boolean(query.q?.trim()) || Number(query.page) > 0 || Number(query.limit) > 0;
+  }
+
+  private buildSearchWhere(query?: string) {
+    const normalizedQuery = query?.trim();
+
+    if (!normalizedQuery) {
+      return {};
+    }
+
+    const normalizedStatus = ORDER_STATUS_VALUES.find(
+      status => status.toLowerCase() === normalizedQuery.toLowerCase(),
+    );
+
+    const orConditions: Array<Record<string, unknown>> = [
+      {
+        fullName: {
+          contains: normalizedQuery,
+          mode: 'insensitive' as const,
+        },
+      },
+      {
+        phone: {
+          contains: normalizedQuery,
+          mode: 'insensitive' as const,
+        },
+      },
+      {
+        city: {
+          contains: normalizedQuery,
+          mode: 'insensitive' as const,
+        },
+      },
+      {
+        address: {
+          contains: normalizedQuery,
+          mode: 'insensitive' as const,
+        },
+      },
+    ];
+
+    if (isUuidLike(normalizedQuery)) {
+      orConditions.unshift({
+        id: normalizedQuery,
+      });
+    }
+
+    if (normalizedStatus) {
+      orConditions.push({ status: normalizedStatus });
+    }
+
+    return {
+      OR: orConditions,
+    };
   }
 }

@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 import InputAdornment from "@mui/material/InputAdornment";
 import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
+import { useTranslation } from "react-i18next";
 
 // GLOBAL CUSTOM COMPONENTS
 import { FormProvider, TextField } from "components/form-hook";
@@ -31,16 +32,9 @@ import { fetchMyAddresses } from "utils/addresses";
 import { ButtonWrapper, CardRoot, FormWrapper } from "./styles";
 
 
-const validationSchema = yup.object().shape({
-  fullName: yup.string().trim().required("Full name is required"),
-  phone: yup.string().required("Phone number is required").test("libya-phone", "Enter a valid Libyan phone number", value => isValidLibyaPhone(value || "")),
-  city: yup.string().oneOf(LIBYAN_CITIES, "Select a Libyan city").required("City is required"),
-  address: yup.string().trim().required("Address is required"),
-  notes: yup.string().trim().optional()
-});
-
 export default function CheckoutForm() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const {
     state,
@@ -63,6 +57,13 @@ export default function CheckoutForm() {
     address: "",
     notes: ""
   };
+  const validationSchema = yup.object().shape({
+    fullName: yup.string().trim().required(t("validationNameRequired")),
+    phone: yup.string().required(t("validationPhoneRequired")).test("libya-phone", t("validationPhoneInvalid"), value => isValidLibyaPhone(value || "")),
+    city: yup.string().oneOf(LIBYAN_CITIES, t("validationCityInvalid")).required(t("validationCityRequired")),
+    address: yup.string().trim().required(t("validationAddressRequired")),
+    notes: yup.string().trim().optional()
+  });
 
   const methods = useForm({
     defaultValues: initialValues,
@@ -96,7 +97,7 @@ export default function CheckoutForm() {
       } catch (error) {
         if (active) {
           setPaymentMethods([]);
-          setPaymentMethodsError(error instanceof Error ? error.message : "Failed to load payment methods.");
+          setPaymentMethodsError(error instanceof Error ? error.message : t("checkoutPaymentMethodsFailed"));
         }
       } finally {
         if (active) {
@@ -187,12 +188,12 @@ export default function CheckoutForm() {
 
   const handleSubmitForm = handleSubmit(async values => {
     if (cartItemsCount === 0) {
-      setSubmitError("Your cart is empty.");
+      setSubmitError(t("checkoutCartEmpty"));
       return;
     }
 
     if (!selectedPaymentCode) {
-      setSubmitError("Select a payment method before placing your order.");
+      setSubmitError(t("checkoutSelectPaymentMethod"));
       return;
     }
 
@@ -222,7 +223,7 @@ export default function CheckoutForm() {
 
       router.push(`/order-confirmation?${nextParams.toString()}`);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : "Failed to place order.");
+      setSubmitError(error instanceof Error ? error.message : t("checkoutSubmitFailed"));
     }
   });
 
@@ -231,13 +232,13 @@ export default function CheckoutForm() {
         <Typography variant="h5" sx={{
         mb: 2
       }}>
-          Checkout Details
+          {t("checkoutTitle")}
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{
         mb: 3
       }}>
-          Choose a payment method, then fill in your contact details and delivery address to place the order.
+          {t("checkoutSubtitle")}
         </Typography>
 
         {submitError ? <Alert severity="error" sx={{
@@ -252,7 +253,7 @@ export default function CheckoutForm() {
             {paymentMethodsError}
           </Alert> : null}
 
-        <TextField select fullWidth size="medium" label="Payment Method" value={selectedPaymentCode} onChange={event => setSelectedPaymentCode(event.target.value)} disabled={paymentMethodsLoading || !paymentMethods.length} sx={{
+        <TextField select fullWidth size="medium" label={t("checkoutPaymentMethod")} value={selectedPaymentCode} onChange={event => setSelectedPaymentCode(event.target.value)} disabled={paymentMethodsLoading || !paymentMethods.length} sx={{
         mb: 3
       }}>
           {paymentMethods.map(method => <MenuItem key={method.id} value={method.code}>{method.name}</MenuItem>)}
@@ -261,31 +262,31 @@ export default function CheckoutForm() {
         <Typography variant="body2" color="text.secondary" sx={{
         mb: 3
       }}>
-          {selectedPaymentCode === "BANK_TRANSFER" ? "After placing the order, you will upload your bank transfer receipt for admin review." : "Cash on Delivery orders are approved immediately and moved to confirmed status."}
+          {selectedPaymentCode === "BANK_TRANSFER" ? t("checkoutBankTransferHint") : t("checkoutCodHint")}
         </Typography>
 
         {isAuthenticated ? <>
-            <TextField select fullWidth size="medium" label="Saved Address" value={selectedAddressId} onChange={handleSelectAddress} disabled={addressesLoading} sx={{
+            <TextField select fullWidth size="medium" label={t("checkoutSavedAddress")} value={selectedAddressId} onChange={handleSelectAddress} disabled={addressesLoading} sx={{
           mb: 3
         }}>
-              <MenuItem value="manual">Enter address manually</MenuItem>
+              <MenuItem value="manual">{t("checkoutManualAddress")}</MenuItem>
               {addresses.map(address => <MenuItem value={address.id} key={address.id}>
-                  {address.label}{address.isDefault ? " (Default)" : ""}
+                  {address.label}{address.isDefault ? ` ${t("checkoutDefaultAddressSuffix")}` : ""}
                 </MenuItem>)}
             </TextField>
 
             <Typography variant="body2" color="text.secondary" sx={{
           mb: 3
         }}>
-              {addresses.length ? "Select a saved address to prefill the form, or switch to manual entry." : "No saved addresses found yet. You can manage them from your address dashboard."}
+              {addresses.length ? t("checkoutSavedAddressHint") : t("checkoutNoSavedAddressesHint")}
               {" "}
-              <Link href="/address">Manage addresses</Link>
+              <Link href="/address">{t("checkoutManageAddresses")}</Link>
             </Typography>
           </> : null}
 
         <FormWrapper>
-          <TextField size="medium" fullWidth label="Full Name" name="fullName" />
-          <TextField size="medium" fullWidth label="Phone Number" name="phone" type="tel" helperText="The Libyan country code +218 is added automatically." slotProps={{
+          <TextField size="medium" fullWidth label={t("checkoutFullName")} name="fullName" />
+          <TextField size="medium" fullWidth label={t("checkoutPhoneNumber")} name="phone" type="tel" helperText={t("checkoutPhoneHelper")} slotProps={{
           input: {
             startAdornment: <InputAdornment position="start">{LIBYA_PHONE_PREFIX}</InputAdornment>,
             inputProps: {
@@ -294,43 +295,43 @@ export default function CheckoutForm() {
             }
           }
         }} />
-          <TextField select size="medium" fullWidth label="City" name="city">
+          <TextField select size="medium" fullWidth label={t("checkoutCity")} name="city">
             {LIBYAN_CITIES.map(city => <MenuItem key={city} value={city}>{city}</MenuItem>)}
           </TextField>
-          <TextField size="medium" fullWidth label="Address" name="address" />
+          <TextField size="medium" fullWidth label={t("checkoutAddress")} name="address" />
           <TextField multiline rows={4} sx={{
           gridColumn: {
             sm: "1 / -1"
           }
-        }} size="medium" fullWidth label="Notes (optional)" name="notes" />
+        }} size="medium" fullWidth label={t("checkoutNotesOptional")} name="notes" />
         </FormWrapper>
 
         {!ready ? <Typography variant="body2" color="text.secondary" sx={{
         mt: 3
       }}>
-            Loading cart...
+            {t("checkoutLoadingCart")}
           </Typography> : null}
 
         {addressesLoading ? <Typography variant="body2" color="text.secondary" sx={{
         mt: 2
       }}>
-            Loading saved addresses...
+            {t("checkoutLoadingAddresses")}
           </Typography> : null}
 
         {paymentMethodsLoading ? <Typography variant="body2" color="text.secondary" sx={{
         mt: 2
       }}>
-            Loading payment methods...
+            {t("checkoutLoadingPayments")}
           </Typography> : null}
       </CardRoot>
 
       <ButtonWrapper>
         <Button size="large" fullWidth href="/cart" color="primary" variant="outlined" LinkComponent={Link}>
-          Back to Cart
+          {t("checkoutBackToCart")}
         </Button>
 
         <Button size="large" fullWidth type="submit" color="primary" variant="contained" disabled={!ready || cartItemsCount === 0 || isSubmitting || paymentMethodsLoading || !selectedPaymentCode}>
-          {isSubmitting ? "Placing Order..." : "Place Order"}
+          {isSubmitting ? t("checkoutPlacingOrder") : t("checkoutPlaceOrder")}
         </Button>
       </ButtonWrapper>
     </FormProvider>;

@@ -38,7 +38,7 @@ export default function ProductRow({
     id,
     isActive,
     status,
-    slug
+    editHref
   } = product;
   const [productActive, setProductActive] = useState(Boolean(isActive));
   const [isDeleting, setIsDeleting] = useState(false);
@@ -116,11 +116,13 @@ export default function ProductRow({
       </StyledTableCell>
 
       <StyledTableCell align="center">
-        <Link href={`/admin/products/${slug}`}>
-          <StyledIconButton>
+        {editHref ? <Link href={editHref}>
+            <StyledIconButton>
+              <Edit />
+            </StyledIconButton>
+          </Link> : <StyledIconButton disabled>
             <Edit />
-          </StyledIconButton>
-        </Link>
+          </StyledIconButton>}
 
         <StyledIconButton onClick={handleDelete} disabled={isDeleting}>
           <Delete />

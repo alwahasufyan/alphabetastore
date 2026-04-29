@@ -78,9 +78,9 @@ export class ProductsController {
     return this.productsService.findAll(query);
   }
 
-  @Get(':slug')
-  findOne(@Param('slug') slug: string) {
-    return this.productsService.findOneBySlug(slug);
+  @Get(':slugOrId')
+  findOne(@Param('slugOrId') slugOrId: string) {
+    return this.productsService.findOneBySlug(slugOrId);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

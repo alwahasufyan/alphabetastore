@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Fragment } from "react";
+import { useTranslation } from "react-i18next";
 
 // CUSTOM ICON COMPONENTS
 import Globe from "icons/Globe";
@@ -11,6 +12,7 @@ import { useLayout } from "../dashboard-layout-context";
 // STYLED COMPONENTS
 import { CustomButton, ToggleWrapper } from "./styles";
 export default function LeftContent() {
+  const { t } = useTranslation();
   const {
     handleOpenMobileSidebar
   } = useLayout();
@@ -22,7 +24,7 @@ export default function LeftContent() {
       <CustomButton LinkComponent={Link} href="/" startIcon={<Globe sx={{
       color: "grey.900"
     }} />}>
-        Browse Website
+        {t("browseWebsite")}
       </CustomButton>
     </Fragment>;
 }

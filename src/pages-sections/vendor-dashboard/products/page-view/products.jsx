@@ -1,35 +1,39 @@
 "use client";
 
 import Alert from "@mui/material/Alert";
+import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
+import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from "@mui/material/IconButton";
 import MenuItem from "@mui/material/MenuItem";
+import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
+import Switch from "@mui/material/Switch";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Delete from "@mui/icons-material/Delete";
+import Edit from "@mui/icons-material/Edit";
 
-// GLOBAL CUSTOM COMPONENTS
-import OverlayScrollbar from "components/overlay-scrollbar";
-import { TableHeader, TablePagination } from "components/data-table";
-
-// GLOBAL CUSTOM HOOK
 import { getComparator, stableSort } from "hooks/useMuiTable";
-
-//  LOCAL CUSTOM COMPONENT
-import ProductRow from "../product-row";
-import SearchArea from "../../search-box";
 import PageWrapper from "../../page-wrapper";
-import { ACTIVE_STATUS, ALL_PRODUCT_STATUS, INACTIVE_STATUS, fetchAdminProducts, mapAdminProduct } from "utils/admin-catalog";
+import { currency } from "lib";
+import { ACTIVE_STATUS, ALL_PRODUCT_STATUS, INACTIVE_STATUS, deleteAdminProduct, fetchAdminProducts, mapAdminProduct, updateAdminProductStatus } from "utils/admin-catalog";
 
 const PAGE_SIZE = 10;
 
-// TABLE HEADING DATA LIST
-const tableHeading = [{
+const TABLE_COLUMNS = [{
   id: "name",
   label: "Name",
   align: "left"
@@ -51,11 +55,9 @@ const tableHeading = [{
   align: "center"
 }];
 
-
-// =============================================================================
-
-
-// =============================================================================
+function getStatusColor(isActive) {
+  return isActive ? "success" : "default";
+}
 
 export default function ProductsPageView({
   products: initialProducts = []
@@ -77,6 +79,11 @@ export default function ProductsPageView({
   const [pageError, setPageError] = useState("");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("name");
+  const [searchInput, setSearchInput] = useState(searchTerm);
+
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
 
   const loadProducts = useCallback(async () => {
     setIsLoading(true);
@@ -118,6 +125,10 @@ export default function ProductsPageView({
   const filteredProducts = useMemo(() => stableSort(products.map(mapAdminProduct), getComparator(order, orderBy)), [order, orderBy, products]);
 
   const handleRequestSort = property => {
+    if (property === "action") {
+      return;
+    }
+
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
@@ -152,54 +163,189 @@ export default function ProductsPageView({
     router.push(queryString ? `${pathname}?${queryString}` : pathname);
   };
 
+  const handleSearchChange = event => {
+    const nextValue = event.target.value;
+    setSearchInput(nextValue);
+
+    const params = new URLSearchParams(searchParams.toString());
+    const normalizedQuery = nextValue.trim();
+
+    params.delete("page");
+
+    if (normalizedQuery) {
+      params.set("q", normalizedQuery);
+    } else {
+      params.delete("q");
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  };
+
+  const handleToggleActive = async product => {
+    const nextValue = !product.isActive;
+
+    setProducts(current => current.map(item => item.id === product.id ? {
+      ...item,
+      status: nextValue ? ACTIVE_STATUS : INACTIVE_STATUS
+    } : item));
+
+    try {
+      await updateAdminProductStatus(product.id, nextValue);
+      await loadProducts();
+    } catch (error) {
+      setProducts(current => current.map(item => item.id === product.id ? {
+        ...item,
+        status: product.status
+      } : item));
+      window.alert(error instanceof Error ? error.message : "Failed to update product status");
+    }
+  };
+
+  const handleDelete = async product => {
+    const confirmed = window.confirm(`Delete product \"${product.name}\"?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteAdminProduct(product.id);
+      setProducts(current => current.filter(item => item.id !== product.id));
+      setPagination(current => ({
+        ...current,
+        total: Math.max(0, current.total - 1)
+      }));
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Failed to delete product");
+    }
+  };
+
   return <PageWrapper title="Product List">
-      <SearchArea buttonText="Add Product" url="/admin/products/create" searchPlaceholder="Search Product..." extraContent={<TextField select size="small" label="Status" value={statusFilter} onChange={handleStatusChange} sx={{
-      minWidth: 160
-    }}>
+      <Stack direction={{
+      xs: "column",
+      md: "row"
+    }} spacing={2} mb={3} alignItems={{
+      xs: "stretch",
+      md: "center"
+    }} justifyContent="space-between">
+        <Stack direction={{
+        xs: "column",
+        sm: "row"
+      }} spacing={2} flex={1}>
+          <TextField fullWidth placeholder="Search Product..." value={searchInput} onChange={handleSearchChange} />
+
+          <TextField select size="medium" label="Status" value={statusFilter} onChange={handleStatusChange} sx={{
+          minWidth: 180
+        }}>
             <MenuItem value={ALL_PRODUCT_STATUS}>All statuses</MenuItem>
             <MenuItem value={ACTIVE_STATUS}>Active</MenuItem>
             <MenuItem value={INACTIVE_STATUS}>Inactive</MenuItem>
-          </TextField>} />
+          </TextField>
+        </Stack>
+
+        <Button component={Link} href="/admin/products/create" variant="contained" color="primary" sx={{
+        alignSelf: {
+          xs: "stretch",
+          md: "center"
+        },
+        minWidth: 160
+      }}>
+          Add Product
+        </Button>
+      </Stack>
 
       {pageError ? <Alert severity="error" sx={{
       mb: 3
     }}>{pageError}</Alert> : null}
 
       <Card>
-        <OverlayScrollbar>
-          <TableContainer sx={{
-          minWidth: 900
-        }}>
-            <Table>
-              <TableHeader order={order} orderBy={orderBy} heading={tableHeading} onRequestSort={handleRequestSort} />
+        <TableContainer sx={{
+        minWidth: 900
+      }}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{
+              backgroundColor: "grey.50"
+            }}>
+                {TABLE_COLUMNS.map(column => <TableCell key={column.id} align={column.align} sx={{
+              fontWeight: 600
+            }}>
+                    {column.id === "action" ? column.label : <button type="button" onClick={() => handleRequestSort(column.id)} style={{
+                background: "none",
+                border: 0,
+                cursor: "pointer",
+                font: "inherit",
+                fontWeight: 600,
+                padding: 0,
+                color: "inherit"
+              }}>
+                        {column.label}
+                      </button>}
+                  </TableCell>)}
+              </TableRow>
+            </TableHead>
 
-              <TableBody>
-                {isLoading ? <tr>
-                    <td colSpan={5}>
-                      <Stack alignItems="center" justifyContent="center" py={6}>
-                        <CircularProgress color="info" />
-                      </Stack>
-                    </td>
-                  </tr> : filteredProducts.length ? filteredProducts.map(product => <ProductRow key={product.id} product={product} onChanged={loadProducts} onDeleted={deletedId => {
-                setProducts(current => current.filter(item => item.id !== deletedId));
-                setPagination(current => ({
-                  ...current,
-                  total: Math.max(0, current.total - 1)
-                }));
-              }} />) : <tr>
-                    <td colSpan={5}>
-                      <Stack alignItems="center" justifyContent="center" py={6}>
-                        <Typography color="text.secondary">No products found for the current filters.</Typography>
-                      </Stack>
-                    </td>
-                  </tr>}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </OverlayScrollbar>
+            <TableBody>
+              {isLoading ? <TableRow>
+                  <TableCell colSpan={5}>
+                    <Stack alignItems="center" justifyContent="center" py={6}>
+                      <CircularProgress color="info" />
+                    </Stack>
+                  </TableCell>
+                </TableRow> : filteredProducts.length ? filteredProducts.map(product => {
+              const statusLabel = product.isActive ? "Active" : product.status || "Inactive";
+
+              return <TableRow key={product.id} hover>
+                      <TableCell align="left">
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                          <Avatar variant="rounded">
+                            <Box component="img" src={product.image} alt={product.name} sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover"
+                    }} />
+                          </Avatar>
+
+                          <Box>
+                            <Typography variant="h6">{product.name}</Typography>
+                            <Typography variant="body2" color="text.secondary">#{String(product.id).split("-")[0]}</Typography>
+                          </Box>
+                        </Stack>
+                      </TableCell>
+
+                      <TableCell align="left">{product.categoryName}</TableCell>
+                      <TableCell align="left">{currency(product.price)}</TableCell>
+                      <TableCell align="left">
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <Switch color="info" checked={Boolean(product.isActive)} onChange={() => handleToggleActive(product)} />
+                          <Chip size="small" label={statusLabel} color={getStatusColor(Boolean(product.isActive))} variant="outlined" />
+                        </Stack>
+                      </TableCell>
+                      <TableCell align="center">
+                        {product.editHref ? <IconButton component={Link} href={product.editHref} size="small" color="info">
+                            <Edit fontSize="small" />
+                          </IconButton> : <IconButton size="small" disabled>
+                            <Edit fontSize="small" />
+                          </IconButton>}
+                        <IconButton size="small" color="error" onClick={() => handleDelete(product)}>
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>;
+            }) : <TableRow>
+                  <TableCell colSpan={5}>
+                    <Stack alignItems="center" justifyContent="center" py={6}>
+                      <Typography color="text.secondary">No products found for the current filters.</Typography>
+                    </Stack>
+                  </TableCell>
+                </TableRow>}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Stack alignItems="center" my={4}>
-          <TablePagination onChange={handleChangePage} page={pagination.page} count={Math.max(1, Number(pagination.totalPages || 1))} />
+          <Pagination color="primary" onChange={handleChangePage} page={pagination.page} count={Math.max(1, Number(pagination.totalPages || 1))} />
         </Stack>
       </Card>
     </PageWrapper>;

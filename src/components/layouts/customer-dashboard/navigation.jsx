@@ -54,7 +54,7 @@ export function Navigation() {
 
   const handleLogout = async () => {
     await logout();
-    router.push("/login");
+    window.location.assign("/login");
   };
 
   return <MainContainer>

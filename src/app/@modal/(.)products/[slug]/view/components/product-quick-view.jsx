@@ -1,10 +1,17 @@
+"use client";
+
+import dynamic from "next/dynamic";
 import Box from "@mui/material/Box";
 import Rating from "@mui/material/Rating";
 import Typography from "@mui/material/Typography";
 import ButtonGroup from "./button-group";
-import ImageCarousel from "./image-carousel";
 import QuickViewModal from "./quick-view-modal";
 import { currency } from "lib";
+
+const ImageCarousel = dynamic(() => import("./image-carousel"), {
+  ssr: false,
+  loading: () => <Box height={300} />
+});
 
 
 // =====================================================

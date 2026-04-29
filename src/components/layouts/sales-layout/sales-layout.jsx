@@ -106,15 +106,15 @@ export default function SalesLayout({
         </Footer1.Brand>
 
         <Footer1.Widget1>
-          <FooterLinksWidget title="About Us" links={footer.about} />
+          <FooterLinksWidget title={footer.aboutTitle} links={footer.about} />
         </Footer1.Widget1>
 
         <Footer1.Widget2>
-          <FooterLinksWidget title="Customer Care" links={footer.customers} />
+          <FooterLinksWidget title={footer.customersTitle} links={footer.customers} />
         </Footer1.Widget2>
 
         <Footer1.Contact>
-          <FooterContact phone={footer.contact.phone} email={footer.contact.email} address={footer.contact.address} />
+          <FooterContact title={footer.contact.title} emailLabel={footer.contact.emailLabel} phoneLabel={footer.contact.phoneLabel} phone={footer.contact.phone} email={footer.contact.email} address={footer.contact.address} />
 
           <FooterSocialLinks links={footer.socials} />
         </Footer1.Contact>
@@ -131,7 +131,7 @@ export default function SalesLayout({
             fontWeight: 500
           }
         }}>
-            &copy; Copyright {new Date().getFullYear()} <span>Alphabeta Store</span>, All rights reserved.
+            &copy; Copyright {new Date().getFullYear()} <span>Alphabeta Store</span>, {footer.copyright}
           </Typography>
         </Footer1.Copyright>
       </Footer1>

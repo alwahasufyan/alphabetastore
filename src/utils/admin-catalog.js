@@ -35,6 +35,7 @@ function normalizeAdminProduct(product) {
 export function mapAdminProduct(product) {
   const price = Number(product?.price ?? 0);
   const status = product?.status || ACTIVE_STATUS;
+  const editKey = product?.slug || product?.id || "";
 
   return {
     ...product,
@@ -43,7 +44,8 @@ export function mapAdminProduct(product) {
     image: getProductPrimaryImage(product),
     price: Number.isFinite(price) ? price : 0,
     status,
-    isActive: status === ACTIVE_STATUS
+    isActive: status === ACTIVE_STATUS,
+    editHref: editKey ? `/admin/products/${editKey}` : null
   };
 }
 

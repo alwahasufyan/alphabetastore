@@ -31,6 +31,8 @@ const ACCORDION_SUMMARY_STYLES = {
 };
 export const renderLevels = (data, handleClose) => {
   return data.map((item, index) => {
+    const href = item.url || item.href;
+
     if (item.child) {
       return <Accordion square key={index} elevation={0} disableGutters sx={ACCORDION_STYLES}>
           <AccordionSummary expandIcon={<ExpandMore />} sx={ACCORDION_SUMMARY_STYLES}>
@@ -44,11 +46,18 @@ export const renderLevels = (data, handleClose) => {
       return <Typography variant="h6" sx={{
         py: 1
       }} key={index}>
-          <NavLink href={item.url}>{item.title}</NavLink>
+          <NavLink href={href || "/"}>{item.title}</NavLink>
         </Typography>;
     }
+
+    if (!href) {
+      return <Box key={index} py={1}>
+          <Typography variant="h6">{item.title}</Typography>
+        </Box>;
+    }
+
     return <Box key={index} py={1}>
-        <NavLink href={item.url} onClick={handleClose}>
+        <NavLink href={href} onClick={handleClose}>
           {item.title}
         </NavLink>
       </Box>;

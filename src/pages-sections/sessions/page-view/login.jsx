@@ -5,6 +5,7 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
@@ -24,14 +25,11 @@ import usePasswordVisible from "../use-password-visible";
 
 
 // LOGIN FORM FIELD VALIDATION SCHEMA
-const validationSchema = yup.object().shape({
-  password: yup.string().min(8, "Password must be at least 8 characters").max(72, "Password is too long").required("Password is required"),
-  email: yup.string().trim().email("Invalid Email Address").required("Email is required")
-});
 export default function LoginPageView() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { loadCurrentUser } = useAuth();
+  const { t } = useTranslation();
   const [errorMessage, setErrorMessage] = useState("");
   const {
     visiblePassword,
@@ -41,6 +39,10 @@ export default function LoginPageView() {
     email: "",
     password: ""
   };
+  const validationSchema = yup.object().shape({
+    password: yup.string().min(8, t("validationPasswordMin")).max(72, t("validationPasswordMax")).required(t("validationPasswordRequired")),
+    email: yup.string().trim().email(t("validationEmailInvalid")).required(t("validationEmailRequired"))
+  });
   const methods = useForm({
     defaultValues: initialValues,
     resolver: yupResolver(validationSchema)
@@ -73,7 +75,7 @@ export default function LoginPageView() {
 
       router.push(searchParams.get("next") || "/profile");
     } catch (error) {
-      setErrorMessage(error instanceof Error && error.message === "Invalid credentials." ? "بيانات الدخول غير صحيحة" : "بيانات الدخول غير صحيحة");
+      setErrorMessage(error instanceof Error && error.message === "Invalid credentials." ? t("authInvalidCredentials") : t("authInvalidCredentials"));
     }
   });
   return <FormProvider methods={methods} onSubmit={handleSubmitForm}>
@@ -82,13 +84,13 @@ export default function LoginPageView() {
         </Alert> : null}
 
       <div className="mb-1">
-        <Label>البريد الإلكتروني</Label>
-        <TextField fullWidth name="email" type="email" size="medium" placeholder="you@example.com" />
+        <Label>{t("authEmailLabel")}</Label>
+        <TextField fullWidth name="email" type="email" size="medium" placeholder={t("authEmailPlaceholder")} />
       </div>
 
       <div className="mb-2">
-        <Label>كلمة المرور</Label>
-        <TextField fullWidth size="medium" name="password" autoComplete="on" placeholder="*********" type={visiblePassword ? "text" : "password"} slotProps={{
+        <Label>{t("authPasswordLabel")}</Label>
+        <TextField fullWidth size="medium" name="password" autoComplete="on" placeholder={t("authPasswordPlaceholder")} type={visiblePassword ? "text" : "password"} slotProps={{
         input: {
           endAdornment: <EyeToggleButton show={visiblePassword} click={togglePasswordVisible} />
         }
@@ -96,7 +98,7 @@ export default function LoginPageView() {
       </div>
 
       <Button fullWidth size="large" type="submit" color="primary" variant="contained" loading={isSubmitting}>
-        تسجيل الدخول
+        {t("authLoginAction")}
       </Button>
     </FormProvider>;
 }

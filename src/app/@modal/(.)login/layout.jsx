@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 // MUI
@@ -12,12 +11,9 @@ export default function LoginModalPage({
   const router = useRouter();
   const pathname = usePathname();
   const isMobile = useMediaQuery(theme => theme.breakpoints.down("xs"));
-  useEffect(() => {
-    if (pathname !== "/login") {
-      router.replace(pathname);
-    }
-  }, [pathname, router]);
+
   if (pathname !== "/login") return null;
+
   const handleClose = () => {
     router.back();
   };

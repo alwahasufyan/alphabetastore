@@ -1,65 +1,60 @@
 "use client";
 
-import MuiLink from "@mui/material/Link";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CircularProgress from "@mui/material/CircularProgress";
+import Link from "@mui/material/Link";
+import Pagination from "@mui/material/Pagination";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
-import OverlayScrollbar from "components/overlay-scrollbar";
-import { TableHeader, TablePagination } from "components/data-table";
-import useMuiTable from "hooks/useMuiTable";
 import { currency } from "lib";
-import SearchArea from "pages-sections/vendor-dashboard/search-box";
 import PageWrapper from "pages-sections/vendor-dashboard/page-wrapper";
 import { fetchAdminPayments, reviewAdminPayment } from "utils/payments";
 
-const tableHeading = [{
-  id: "orderId",
-  label: "Order",
-  align: "left"
-}, {
-  id: "customer",
-  label: "Customer",
-  align: "left"
-}, {
-  id: "method",
-  label: "Method",
-  align: "left"
-}, {
-  id: "amount",
-  label: "Amount",
-  align: "left"
-}, {
-  id: "statusLabel",
-  label: "Status",
-  align: "left"
-}, {
-  id: "receipt",
-  label: "Receipt",
-  align: "left"
-}, {
-  id: "action",
-  label: "Action",
-  align: "center"
-}];
+const PAGE_SIZE = 10;
+
+function formatPaymentDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  return new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  });
+}
 
 export default function PaymentsPageView() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchTerm = searchParams.get("q")?.trim().toLowerCase() || "";
+  const currentPage = Math.max(Number(searchParams.get("page") || 1), 1);
+  const searchTerm = searchParams.get("q")?.trim() || "";
   const [payments, setPayments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pageError, setPageError] = useState("");
+  const [searchInput, setSearchInput] = useState(searchTerm);
   const [actionState, setActionState] = useState({});
 
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
+
   const loadPayments = useCallback(async () => {
+    setIsLoading(true);
     setPageError("");
 
     try {
@@ -67,6 +62,7 @@ export default function PaymentsPageView() {
       setPayments(Array.isArray(data) ? data : []);
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Failed to load payments.");
+      setPayments([]);
     } finally {
       setIsLoading(false);
     }
@@ -76,29 +72,60 @@ export default function PaymentsPageView() {
     loadPayments();
   }, [loadPayments]);
 
-  const filteredPayments = useMemo(() => payments.map(payment => ({
-    ...payment,
-    customer: payment.order?.fullName || "Customer",
-    method: payment.paymentMethodName,
-    receiptUrl: payment.receipt?.fileUrl || ""
-  })).filter(payment => {
-    if (!searchTerm) return true;
+  const filteredPayments = useMemo(() => {
+    const normalizedQuery = searchTerm.toLowerCase();
 
-    return [payment.orderId, payment.customer, payment.method, payment.statusLabel, payment.receiptUrl].some(value => String(value || "").toLowerCase().includes(searchTerm));
-  }), [payments, searchTerm]);
+    return payments
+      .map(payment => ({
+        ...payment,
+        customer: payment.order?.fullName || "Customer",
+        method: payment.paymentMethodName || "Payment",
+        receiptUrl: payment.receipt?.fileUrl || ""
+      }))
+      .filter(payment => {
+        if (!normalizedQuery) {
+          return true;
+        }
 
-  const {
-    order,
-    orderBy,
-    rowsPerPage,
-    filteredList,
-    handleChangePage,
-    handleRequestSort
-  } = useMuiTable({
-    listData: filteredPayments,
-    defaultSort: "createdAt",
-    defaultOrder: "desc"
-  });
+        return [payment.orderId, payment.customer, payment.method, payment.statusLabel, payment.receiptUrl]
+          .some(value => String(value || "").toLowerCase().includes(normalizedQuery));
+      })
+      .sort((left, right) => String(right.createdAt || "").localeCompare(String(left.createdAt || "")));
+  }, [payments, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const visiblePayments = filteredPayments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const updateQuery = useCallback((nextQuery, nextPage = 1) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const normalizedQuery = nextQuery.trim();
+
+    if (normalizedQuery) {
+      params.set("q", normalizedQuery);
+    } else {
+      params.delete("q");
+    }
+
+    if (nextPage > 1) {
+      params.set("page", String(nextPage));
+    } else {
+      params.delete("page");
+    }
+
+    const queryString = params.toString();
+    router.push(queryString ? `${pathname}?${queryString}` : pathname);
+  }, [pathname, router, searchParams]);
+
+  const handleSearchChange = event => {
+    const nextValue = event.target.value;
+    setSearchInput(nextValue);
+    updateQuery(nextValue, 1);
+  };
+
+  const handlePageChange = (_, nextPage) => {
+    updateQuery(searchInput, nextPage);
+  };
 
   const handleReview = async (paymentId, status) => {
     setActionState(current => ({
@@ -127,91 +154,73 @@ export default function PaymentsPageView() {
   };
 
   return <PageWrapper title="Payments">
-      <SearchArea url="/admin/payments" buttonText="" searchPlaceholder="Search Payment..." />
+      <TextField fullWidth margin="normal" placeholder="Search Payment..." value={searchInput} onChange={handleSearchChange} sx={{
+      mb: 2
+    }} />
 
       {pageError ? <Alert severity="error" sx={{
       mb: 3
     }}>{pageError}</Alert> : null}
 
       <Card>
-        <OverlayScrollbar>
-          <TableContainer sx={{
-          minWidth: 1100
-        }}>
-            <Table>
-              <TableHeader order={order} orderBy={orderBy} heading={tableHeading} onRequestSort={handleRequestSort} />
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow sx={{
+              backgroundColor: "grey.50"
+            }}>
+                <TableCell sx={{ fontWeight: 600 }}>Order</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Customer</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Method</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Receipt</TableCell>
+                <TableCell align="center" sx={{ fontWeight: 600 }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
 
-              <TableBody>
-                {isLoading ? <tr>
-                    <td colSpan={7}>
-                      <Stack alignItems="center" justifyContent="center" py={6}>
-                        <CircularProgress color="info" />
+            <TableBody>
+              {isLoading ? <TableRow>
+                  <TableCell colSpan={8}>
+                    <Stack alignItems="center" justifyContent="center" py={6}>
+                      <CircularProgress color="info" />
+                    </Stack>
+                  </TableCell>
+                </TableRow> : visiblePayments.length ? visiblePayments.map(payment => <TableRow key={payment.id} hover>
+                    <TableCell>#{payment.orderId.slice(0, 8).toUpperCase()}</TableCell>
+                    <TableCell>{payment.customer}</TableCell>
+                    <TableCell>{payment.method}</TableCell>
+                    <TableCell>{currency(payment.amount)}</TableCell>
+                    <TableCell>{formatPaymentDate(payment.createdAt)}</TableCell>
+                    <TableCell>{payment.statusLabel}</TableCell>
+                    <TableCell>
+                      {payment.receiptUrl ? <Link href={payment.receiptUrl} target="_blank" rel="noreferrer">View receipt</Link> : <Typography variant="body2" color="text.secondary">No receipt</Typography>}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Button size="small" variant="contained" color="success" disabled={payment.status !== "PENDING" || Boolean(actionState[payment.id])} onClick={() => handleReview(payment.id, "APPROVED")}>
+                          {actionState[payment.id] === "APPROVED" ? "Approving..." : "Approve"}
+                        </Button>
+
+                        <Button size="small" variant="outlined" color="error" disabled={payment.status !== "PENDING" || Boolean(actionState[payment.id])} onClick={() => handleReview(payment.id, "REJECTED")}>
+                          {actionState[payment.id] === "REJECTED" ? "Rejecting..." : "Reject"}
+                        </Button>
                       </Stack>
-                    </td>
-                  </tr> : filteredList.length ? filteredList.map(payment => <tr key={payment.id}>
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Typography variant="body2">#{payment.orderId.slice(0, 8).toUpperCase()}</Typography>
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Typography variant="body2">{payment.customer}</Typography>
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Typography variant="body2">{payment.method}</Typography>
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Typography variant="body2">{currency(payment.amount)}</Typography>
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Typography variant="body2">{payment.statusLabel}</Typography>
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        {payment.receiptUrl ? <MuiLink href={payment.receiptUrl} target="_blank" rel="noreferrer">View receipt</MuiLink> : <Typography variant="body2" color="text.secondary">No receipt</Typography>}
-                      </td>
-
-                      <td style={{
-                padding: "1rem"
-              }}>
-                        <Stack direction="row" spacing={1} justifyContent="center">
-                          <Button size="small" variant="contained" color="success" disabled={payment.status !== "PENDING" || Boolean(actionState[payment.id])} onClick={() => handleReview(payment.id, "APPROVED")}>
-                            {actionState[payment.id] === "APPROVED" ? "Approving..." : "Approve"}
-                          </Button>
-
-                          <Button size="small" variant="outlined" color="error" disabled={payment.status !== "PENDING" || Boolean(actionState[payment.id])} onClick={() => handleReview(payment.id, "REJECTED")}>
-                            {actionState[payment.id] === "REJECTED" ? "Rejecting..." : "Reject"}
-                          </Button>
-                        </Stack>
-                      </td>
-                    </tr>) : <tr>
-                    <td colSpan={7}>
-                      <Stack alignItems="center" justifyContent="center" py={6}>
-                        <Typography color="text.secondary">No payments found for the current filters.</Typography>
-                      </Stack>
-                    </td>
-                  </tr>}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </OverlayScrollbar>
+                    </TableCell>
+                  </TableRow>) : <TableRow>
+                  <TableCell colSpan={8}>
+                    <Stack alignItems="center" justifyContent="center" py={6}>
+                      <Typography color="text.secondary">No payments found for the current search.</Typography>
+                    </Stack>
+                  </TableCell>
+                </TableRow>}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Stack alignItems="center" my={4}>
-          <TablePagination onChange={handleChangePage} count={Math.max(1, Math.ceil(filteredPayments.length / rowsPerPage))} />
+          <Pagination color="primary" page={page} count={totalPages} onChange={handlePageChange} />
         </Stack>
       </Card>
     </PageWrapper>;

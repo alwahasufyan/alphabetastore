@@ -9,12 +9,15 @@ import { Heading } from "./styles";
 // ==============================================================
 
 export function FooterContact({
+  title,
+  emailLabel,
+  phoneLabel,
   email,
   phone,
   address
 }) {
   return <Fragment>
-      <Heading>Contact Us</Heading>
+      <Heading>{title || "Contact Us"}</Heading>
 
       <Typography variant="body1" sx={{
       py: 0.6
@@ -25,14 +28,14 @@ export function FooterContact({
       <Typography variant="body1" sx={{
       py: 0.6
     }}>
-        Email: {email}
+        {emailLabel || "Email"}: {email}
       </Typography>
 
       <Typography variant="body1" sx={{
       py: 0.6,
       mb: 2
     }}>
-        Phone: {phone}
+        {phoneLabel || "Phone"}: {phone}
       </Typography>
     </Fragment>;
 }

@@ -38,6 +38,8 @@ export default function SearchArea({
     const params = new URLSearchParams(searchParams);
     const nextValue = value.trim();
 
+    params.delete("page");
+
     if (nextValue) {
       params.set("q", nextValue);
     } else {

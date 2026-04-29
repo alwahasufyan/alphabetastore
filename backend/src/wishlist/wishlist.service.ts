@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { Prisma } from '../../node_modules/.prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { FindWishlistQueryDto } from './dto/find-wishlist-query.dto';
 
 const wishlistItemSelect = {
   id: true,
@@ -29,14 +30,43 @@ const wishlistItemSelect = {
 export class WishlistService {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(userId: string) {
-    return this.prisma.wishlistItem.findMany({
-      where: { userId },
-      select: wishlistItemSelect,
-      orderBy: {
-        createdAt: 'desc',
+  async findAll(userId: string, query: FindWishlistQueryDto = {}) {
+    const where = { userId };
+
+    if (!this.shouldPaginate(query)) {
+      return this.prisma.wishlistItem.findMany({
+        where,
+        select: wishlistItemSelect,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+    }
+
+    const page = Number(query.page || 1);
+    const limit = Number(query.limit || 6);
+    const [items, total] = await Promise.all([
+      this.prisma.wishlistItem.findMany({
+        where,
+        select: wishlistItemSelect,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.wishlistItem.count({ where }),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
       },
-    });
+    };
   }
 
   async create(userId: string, productId: string) {
@@ -83,5 +113,9 @@ export class WishlistService {
     return {
       message: 'Wishlist item removed successfully.',
     };
+  }
+
+  private shouldPaginate(query: FindWishlistQueryDto) {
+    return Number(query.page) > 0 || Number(query.limit) > 0;
   }
 }

@@ -209,11 +209,18 @@ export class ProductsService {
     return [...categoryIds];
   }
 
-  async findOneBySlug(slug: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { slug },
-      include: productInclude,
-    });
+  async findOneBySlug(slugOrId: string) {
+    const product = UUID_PATTERN.test(slugOrId)
+      ? await this.prisma.product.findFirst({
+          where: {
+            OR: [{ id: slugOrId }, { slug: slugOrId }],
+          },
+          include: productInclude,
+        })
+      : await this.prisma.product.findUnique({
+          where: { slug: slugOrId },
+          include: productInclude,
+        });
 
     if (!product) {
       throw new NotFoundException('Product not found.');

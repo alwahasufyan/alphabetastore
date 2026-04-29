@@ -13,18 +13,26 @@ const getLayoutData = cache(async () => {
     href: item.href
   }));
 
-  const footerLinks = navigation.slice(0, 6).map(item => ({
-    title: item.title,
-    url: item.href
-  }));
-  const dashboardShortcut = {
-    title: isArabic ? "لوحة التحكم" : "Dashboard",
-    url: "/vendor/dashboard"
-  };
-  const aboutShortcut = {
-    title: isArabic ? "معلومات عنا" : "About Us",
+  const aboutLinks = [{
+    title: isArabic ? "الرئيسية" : "Home",
     url: "/"
-  };
+  }, {
+    title: isArabic ? "المنتجات" : "Products",
+    url: "/products/search"
+  }, {
+    title: isArabic ? "الخدمات" : "Services",
+    url: "/services"
+  }];
+  const customerLinks = [{
+    title: isArabic ? "السلة" : "Cart",
+    url: "/cart"
+  }, {
+    title: isArabic ? "الحساب" : "Account",
+    url: "/profile"
+  }, {
+    title: isArabic ? "طلباتي" : "Orders",
+    url: "/orders"
+  }];
 
   return {
     topbar: {
@@ -68,14 +76,20 @@ const getLayoutData = cache(async () => {
       description: isArabic ? "Alphabeta Store مدعوم بواجهات خلفية حقيقية." : "Alphabeta Store powered by real backend APIs.",
       playStoreUrl: "#",
       appStoreUrl: "#",
-      about: [aboutShortcut, dashboardShortcut, ...footerLinks].slice(0, 8),
-      customers: [dashboardShortcut, ...footerLinks].slice(0, 8),
+      aboutTitle: isArabic ? "من نحن" : "About Us",
+      customersTitle: isArabic ? "خدمة العملاء" : "Customer Care",
+      about: aboutLinks,
+      customers: customerLinks,
       contact: {
+        title: isArabic ? "تواصل معنا" : "Contact Us",
+        emailLabel: isArabic ? "البريد الإلكتروني" : "Email",
+        phoneLabel: isArabic ? "الهاتف" : "Phone",
         phone: settings?.shop_phone || "+218000000000",
         email: settings?.support_email || "support@alphabeta.com",
         address: settings?.shop_address || "Tripoli, Libya"
       },
-      socials: []
+      socials: [],
+      copyright: isArabic ? "جميع الحقوق محفوظة." : "All rights reserved."
     }
   };
 });

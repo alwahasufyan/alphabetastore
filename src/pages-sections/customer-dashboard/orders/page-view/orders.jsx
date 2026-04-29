@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Stack from "@mui/material/Stack";
@@ -11,14 +11,23 @@ import Packages from "icons/Packages";
 import OrderRow from "../order-row";
 import Pagination from "../../pagination";
 import DashboardHeader from "../../dashboard-header";
-import { fetchCustomerOrders } from "utils/orders";
+import { fetchCustomerOrdersPage } from "utils/orders";
+
+const PAGE_SIZE = 5;
 
 export function OrdersPageView({
   initialPage = 1
 }) {
   const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get("page") || initialPage || 1);
+  const pageFromQuery = Number.parseInt(searchParams.get("page") || "", 10);
+  const currentPage = Number.isFinite(pageFromQuery) && pageFromQuery > 0 ? pageFromQuery : Math.max(Number(initialPage) || 1, 1);
   const [orders, setOrders] = useState([]);
+  const [pagination, setPagination] = useState({
+    page: currentPage,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 1
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [pageError, setPageError] = useState("");
 
@@ -26,16 +35,35 @@ export function OrdersPageView({
     let cancelled = false;
 
     const loadOrders = async () => {
+      if (!cancelled) {
+        setIsLoading(true);
+      }
       setPageError("");
 
       try {
-        const nextOrders = await fetchCustomerOrders();
+        const response = await fetchCustomerOrdersPage({
+          page: currentPage,
+          limit: PAGE_SIZE
+        });
         if (!cancelled) {
-          setOrders(nextOrders);
+          setOrders(Array.isArray(response?.items) ? response.items : []);
+          setPagination(response?.pagination || {
+            page: currentPage,
+            limit: PAGE_SIZE,
+            total: 0,
+            totalPages: 1
+          });
         }
       } catch (error) {
         if (!cancelled) {
           setPageError(error instanceof Error ? error.message : "Failed to load orders.");
+          setOrders([]);
+          setPagination({
+            page: currentPage,
+            limit: PAGE_SIZE,
+            total: 0,
+            totalPages: 1
+          });
         }
       } finally {
         if (!cancelled) {
@@ -49,14 +77,9 @@ export function OrdersPageView({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [currentPage]);
 
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(orders.length / pageSize));
-  const paginatedOrders = useMemo(() => {
-    const offset = (Math.max(currentPage, 1) - 1) * pageSize;
-    return orders.slice(offset, offset + pageSize);
-  }, [currentPage, orders]);
+  const totalPages = Math.max(1, Number(pagination.totalPages || 1));
 
   return <Fragment>
       <DashboardHeader Icon={Packages} title="طلباتي" />
@@ -69,10 +92,10 @@ export function OrdersPageView({
           <CircularProgress color="info" />
         </Stack> : null}
 
-      {!isLoading && !pageError && paginatedOrders.length === 0 ? <Alert severity="info">لا توجد طلبات حتى الآن.</Alert> : null}
+      {!isLoading && !pageError && orders.length === 0 ? <Alert severity="info">لا توجد طلبات حتى الآن.</Alert> : null}
 
-      {!isLoading && !pageError ? paginatedOrders.map(order => <OrderRow order={order} key={order.id} />) : null}
+      {!isLoading && !pageError ? orders.map(order => <OrderRow order={order} key={order.id} />) : null}
 
-      <Pagination count={totalPages} />
+      <Pagination count={totalPages} page={Math.max(currentPage, 1)} />
     </Fragment>;
 }

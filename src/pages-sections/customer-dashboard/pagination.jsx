@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { startTransition, useCallback } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // MUI
 import MuiPagination from "@mui/material/Pagination";
@@ -22,19 +22,35 @@ export const StyledPagination = styled(MuiPagination)({
 // ==============================================================
 
 export default function Pagination({
-  count
+  count,
+  page
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const handlePageChange = useCallback((_, page) => {
-    const searchParams = new URLSearchParams();
-    if (page === 1) {
-      searchParams.delete("page");
-    } else {
-      searchParams.set("page", page.toString());
+  const searchParams = useSearchParams();
+  const handlePageChange = useCallback((_, nextPage) => {
+    if (nextPage === page) {
+      return;
     }
-    router.push(`${pathname}?${searchParams.toString()}`);
-  }, [router, pathname]);
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (nextPage === 1) {
+      params.delete("page");
+    } else {
+      params.set("page", nextPage.toString());
+    }
+
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+
+    startTransition(() => {
+      router.push(nextUrl, {
+        scroll: false
+      });
+      router.refresh();
+    });
+  }, [page, pathname, router, searchParams]);
+
   if (count <= 1) return null;
-  return <StyledPagination color="primary" count={count} onChange={handlePageChange} />;
+  return <StyledPagination color="primary" count={count} page={page} onChange={handlePageChange} />;
 }

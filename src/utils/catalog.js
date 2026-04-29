@@ -187,9 +187,11 @@ export function mapCatalogProduct(product) {
   const price = Number(product?.price ?? 0);
   const categoryName = product?.category?.name || "";
   const categories = Array.isArray(product?.categories) ? product.categories.map(item => item?.name || item).filter(Boolean) : categoryName ? [categoryName] : [];
+  const slug = product?.slug || product?.id || "";
 
   return {
     ...product,
+    slug,
     title: product?.name || "Untitled Product",
     thumbnail: images[0],
     images,
