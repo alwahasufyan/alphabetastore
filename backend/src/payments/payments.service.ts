@@ -13,6 +13,7 @@ import {
   ReceiptReviewStatus,
 } from '../prisma/prisma-client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../queue/notification.service';
 import { CreateOrderPaymentDto } from './dto/create-order-payment.dto';
 import { ReviewPaymentDto } from './dto/review-payment.dto';
 
@@ -27,6 +28,7 @@ const adminPaymentInclude = {
   order: {
     select: {
       id: true,
+      userId: true,
       fullName: true,
       phone: true,
       city: true,
@@ -74,7 +76,10 @@ type PaymentWithRelations = Prisma.PaymentTransactionGetPayload<{
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async findActiveMethods() {
     const methods = await this.prisma.paymentMethod.findMany({
@@ -190,6 +195,13 @@ export class PaymentsService {
         },
         include: adminPaymentInclude,
       });
+    });
+
+    void this.notificationService.notifyPaymentReceived({
+      orderId,
+      paymentId: payment.id,
+      userId: identity.userId,
+      amount: Number(payment.amount),
     });
 
     return this.serializePayment(payment);
@@ -381,7 +393,25 @@ export class PaymentsService {
       });
     });
 
-    return this.serializePayment(updatedPayment);
+    const serialized = this.serializePayment(updatedPayment);
+
+    if (reviewPaymentDto.status === PaymentTransactionStatus.APPROVED) {
+      void this.notificationService.notifyPaymentApproved({
+        orderId: payment.order.id,
+        paymentId: payment.id,
+        userId: payment.order.userId ?? null,
+        amount: Number(payment.amount),
+      });
+    } else {
+      void this.notificationService.notifyPaymentRejected({
+        orderId: payment.order.id,
+        paymentId: payment.id,
+        userId: payment.order.userId ?? null,
+        amount: Number(payment.amount),
+      });
+    }
+
+    return serialized;
   }
 
   private async findOrderForIdentity(identity: PaymentIdentity, orderId: string) {

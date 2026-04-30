@@ -3,12 +3,14 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { validationSchema } from './config/env.validation';
+import { HealthModule } from './health/health.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -26,6 +28,34 @@ import { WishlistModule } from './wishlist/wishlist.module';
       isGlobal: true,
       envFilePath: '.env',
       validationSchema,
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const isDevelopment = configService.get<string>('NODE_ENV') !== 'production';
+
+        return {
+          pinoHttp: {
+            level: isDevelopment ? 'debug' : 'info',
+            transport: isDevelopment
+              ? { target: 'pino-pretty', options: { colorize: true, singleLine: true } }
+              : undefined,
+            redact: ['req.headers.authorization', 'req.headers.cookie'],
+            customLogLevel: (_req: unknown, res: { statusCode: number }, err: unknown) => {
+              if (err || (res?.statusCode ?? 0) >= 500) {
+                return 'error';
+              }
+
+              if ((res?.statusCode ?? 0) >= 400) {
+                return 'warn';
+              }
+
+              return 'info';
+            },
+          },
+        };
+      },
     }),
     CacheModule.registerAsync({
       isGlobal: true,
@@ -68,6 +98,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
     TicketsModule,
     WishlistModule,
     QueueModule,
+    HealthModule,
   ],
   providers: [
     {

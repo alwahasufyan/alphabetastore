@@ -1,9 +1,12 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Prisma } from '@prisma/client';
+import type { Cache } from 'cache-manager';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { ProductStatus } from '../prisma/prisma-client';
@@ -64,14 +67,35 @@ const productListSelect = {
   },
 } satisfies Prisma.ProductSelect;
 
+const PRODUCT_LIST_CACHE_PREFIX = 'products:list:';
+const PRODUCT_DETAIL_CACHE_PREFIX = 'products:detail:';
+const PRODUCT_LIST_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+const PRODUCT_DETAIL_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 @Injectable()
 export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async findAll(query: FindProductsQueryDto = {}) {
+    const cacheKey = `${PRODUCT_LIST_CACHE_PREFIX}${JSON.stringify(query)}`;
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    const result = await this.queryProducts(query);
+    await this.cacheManager.set(cacheKey, result, PRODUCT_LIST_CACHE_TTL_MS);
+    await this.registerListCacheKey(cacheKey);
+
+    return result;
+  }
+
+  private async queryProducts(query: FindProductsQueryDto) {
     const searchTerm = query.q?.trim() || query.search?.trim();
     const categoryFilter = query.category?.trim();
     const whereClauses: Prisma.ProductWhereInput[] = [];
@@ -245,6 +269,13 @@ export class ProductsService {
   }
 
   async findOneBySlug(slugOrId: string) {
+    const cacheKey = `${PRODUCT_DETAIL_CACHE_PREFIX}${slugOrId}`;
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
     const product = UUID_PATTERN.test(slugOrId)
       ? await this.prisma.product.findFirst({
           where: {
@@ -261,6 +292,8 @@ export class ProductsService {
       throw new NotFoundException('Product not found.');
     }
 
+    await this.cacheManager.set(cacheKey, product, PRODUCT_DETAIL_CACHE_TTL_MS);
+
     return product;
   }
 
@@ -270,7 +303,7 @@ export class ProductsService {
     const slug = this.createSlug(createProductDto.slug ?? createProductDto.name);
 
     try {
-      return await this.prisma.product.create({
+      const product = await this.prisma.product.create({
         data: {
           categoryId: createProductDto.categoryId,
           name: createProductDto.name,
@@ -291,6 +324,10 @@ export class ProductsService {
         },
         include: productInclude,
       });
+
+      await this.invalidateProductListCache();
+
+      return product;
     } catch (error) {
       this.handleUniqueConstraint(error, 'Product slug already exists.');
       throw error;
@@ -298,14 +335,14 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto) {
-    await this.ensureProductExists(id);
+    const existing = await this.ensureProductExists(id);
 
     if (updateProductDto.categoryId) {
       await this.ensureCategoryExists(updateProductDto.categoryId);
     }
 
     try {
-      return await this.prisma.product.update({
+      const product = await this.prisma.product.update({
         where: { id },
         data: {
           categoryId: updateProductDto.categoryId,
@@ -328,6 +365,14 @@ export class ProductsService {
         },
         include: productInclude,
       });
+
+      await Promise.all([
+        this.invalidateProductListCache(),
+        this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${id}`),
+        this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${existing.slug}`),
+      ]);
+
+      return product;
     } catch (error) {
       this.handleUniqueConstraint(error, 'Product slug already exists.');
       throw error;
@@ -335,7 +380,7 @@ export class ProductsService {
   }
 
   async addImages(id: string, imageUrls: string[]) {
-    await this.ensureProductExists(id);
+    const existing = await this.ensureProductExists(id);
 
     const imageCount = await this.prisma.productImage.count({
       where: {
@@ -351,6 +396,11 @@ export class ProductsService {
       })),
     });
 
+    await Promise.all([
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${id}`),
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${existing.slug}`),
+    ]);
+
     return this.prisma.product.findUniqueOrThrow({
       where: { id },
       include: productInclude,
@@ -358,7 +408,7 @@ export class ProductsService {
   }
 
   async removeImage(id: string, imageId: string) {
-    await this.ensureProductExists(id);
+    const existing = await this.ensureProductExists(id);
 
     const productImage = await this.prisma.productImage.findFirst({
       where: {
@@ -382,6 +432,10 @@ export class ProductsService {
     });
 
     await this.storageService.deleteFile(productImage.imageUrl);
+    await Promise.all([
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${id}`),
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${existing.slug}`),
+    ]);
 
     return this.prisma.product.findUniqueOrThrow({
       where: { id },
@@ -394,6 +448,7 @@ export class ProductsService {
       where: { id },
       select: {
         id: true,
+        slug: true,
         images: {
           select: {
             imageUrl: true,
@@ -410,15 +465,49 @@ export class ProductsService {
       where: { id },
     });
 
-    await Promise.all(
-      existingProduct.images.map((image: { imageUrl: string }) =>
+    await Promise.all([
+      ...existingProduct.images.map((image: { imageUrl: string }) =>
         this.storageService.deleteFile(image.imageUrl),
       ),
-    );
+      this.invalidateProductListCache(),
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${id}`),
+      this.cacheManager.del(`${PRODUCT_DETAIL_CACHE_PREFIX}${existingProduct.slug}`),
+    ]);
 
     return {
       message: 'Product deleted successfully.',
     };
+  }
+
+  /**
+   * Invalidates product list cache entries.
+   *
+   * cache-manager does not support prefix-based key deletion, so we maintain
+   * a registry of active list-cache keys and delete them all on write.
+   * The registry itself is stored under PRODUCT_LIST_CACHE_PREFIX + 'keys'.
+   */
+  private async invalidateProductListCache(): Promise<void> {
+    const registryKey = `${PRODUCT_LIST_CACHE_PREFIX}keys`;
+    const activeKeys = await this.cacheManager.get<string[]>(registryKey);
+
+    if (activeKeys?.length) {
+      await Promise.all(activeKeys.map((key) => this.cacheManager.del(key)));
+    }
+
+    await this.cacheManager.del(registryKey);
+  }
+
+  private async registerListCacheKey(cacheKey: string): Promise<void> {
+    const registryKey = `${PRODUCT_LIST_CACHE_PREFIX}keys`;
+    const existing = (await this.cacheManager.get<string[]>(registryKey)) ?? [];
+
+    if (!existing.includes(cacheKey)) {
+      await this.cacheManager.set(
+        registryKey,
+        [...existing, cacheKey],
+        PRODUCT_LIST_CACHE_TTL_MS + 30_000, // slightly longer than the cached entries
+      );
+    }
   }
 
   private async ensureProductExists(id: string) {
@@ -426,6 +515,7 @@ export class ProductsService {
       where: { id },
       select: {
         id: true,
+        slug: true,
       },
     });
 

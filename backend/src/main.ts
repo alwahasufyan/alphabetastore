@@ -5,17 +5,25 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SuccessResponseInterceptor } from './common/interceptors/success-response.interceptor';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+
+  app.useLogger(app.get(Logger));
+
   const configService = app.get(ConfigService);
   const uploadsPath = join(process.cwd(), 'uploads');
 
-  app.setGlobalPrefix(configService.get<string>('API_PREFIX', 'api/v1'));
+  app.setGlobalPrefix(configService.get<string>('API_PREFIX', 'api/v1'), {
+    exclude: ['health'],
+  });
   app.useStaticAssets(uploadsPath, {
     prefix: '/uploads/',
   });

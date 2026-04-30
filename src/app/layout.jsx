@@ -19,6 +19,9 @@ import { AuthProvider } from "contexts/AuthContext";
 // SITE SETTINGS PROVIDER
 import SettingsProvider from "contexts/SettingContext";
 
+// REACT QUERY PROVIDER
+import ReactQueryProvider from "contexts/ReactQueryProvider";
+
 
 // GLOBAL CUSTOM COMPONENTS
 import RTL from "components/rtl";
@@ -40,20 +43,22 @@ export default function RootLayout({
 }) {
   return <html lang="ar" dir="rtl" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body id="body" className={geist.className}>
-        <AuthProvider>
-          <CartProvider>
-            <SettingsProvider>
-              <ThemeProvider>
-                <RTL>
-                  {modal}
-                  {children}
-                </RTL>
+        <ReactQueryProvider>
+          <AuthProvider>
+            <CartProvider>
+              <SettingsProvider>
+                <ThemeProvider>
+                  <RTL>
+                    {modal}
+                    {children}
+                  </RTL>
 
-                <ProgressBar />
-              </ThemeProvider>
-            </SettingsProvider>
-          </CartProvider>
-        </AuthProvider>
+                  <ProgressBar />
+                </ThemeProvider>
+              </SettingsProvider>
+            </CartProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
 
         <GoogleAnalytics gaId="G-XKPD36JXY0" />
       </body>
