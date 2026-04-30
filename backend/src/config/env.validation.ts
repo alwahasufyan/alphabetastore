@@ -13,4 +13,5 @@ export const validationSchema = Joi.object({
   ADMIN_NAME: Joi.string().min(2).required(),
   ADMIN_EMAIL: Joi.string().email().required(),
   ADMIN_PASSWORD: Joi.string().min(8).required(),
+  CORS_ALLOWED_ORIGINS: Joi.string().default(''),
 });

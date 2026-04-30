@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { unlink } from 'fs/promises';
-import type { Prisma } from '../../node_modules/.prisma/client';
+import type { Prisma } from '@prisma/client';
 import { join } from 'path';
 
 import { PrismaService } from '../prisma/prisma.service';

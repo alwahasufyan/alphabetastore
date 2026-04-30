@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 
 import { OrderPaymentStatus, OrderStatus, PaymentMethodCode } from '../prisma/prisma-client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -18,6 +19,7 @@ const orderInclude = {
       name: true,
       email: true,
       phone: true,
+      role: true,
     },
   },
   items: {
@@ -100,15 +102,16 @@ const cartForOrderInclude = {
       product: {
         select: {
           name: true,
+          stockQty: true,
         },
       },
     },
   },
 } as const;
 
-type CartForOrder = any;
+type CartForOrder = Prisma.CartGetPayload<{ include: typeof cartForOrderInclude }>;
 
-type OrderWithRelations = any;
+type OrderWithRelations = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 const ORDER_STATUS_VALUES = Object.values(OrderStatus) as Array<
   (typeof OrderStatus)[keyof typeof OrderStatus]
 >;
@@ -128,6 +131,14 @@ export class OrdersService {
 
     if (!cart || cart.items.length === 0) {
       throw new BadRequestException('Cart is empty.');
+    }
+
+    for (const item of cart.items) {
+      if (item.product.stockQty < item.quantity) {
+        throw new BadRequestException(
+          `"${item.product.name}" has insufficient stock (available: ${item.product.stockQty}).`,
+        );
+      }
     }
 
     const savedAddress = await this.resolveSavedAddress(identity.userId, createOrderDto.addressId);
@@ -178,6 +189,14 @@ export class OrdersService {
         },
         include: orderInclude,
       }),
+      ...cart.items.map((item: CartForOrder['items'][number]) =>
+        this.prisma.product.update({
+          where: { id: item.productId },
+          data: {
+            stockQty: { decrement: item.quantity },
+          },
+        }),
+      ),
       this.prisma.cartItem.deleteMany({
         where: {
           cartId: cart.id,

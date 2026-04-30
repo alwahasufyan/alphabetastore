@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
@@ -23,6 +25,13 @@ import { WishlistModule } from './wishlist/wishlist.module';
       envFilePath: '.env',
       validationSchema,
     }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60_000,
+        limit: 60,
+      },
+    ]),
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -36,6 +45,12 @@ import { WishlistModule } from './wishlist/wishlist.module';
     SettingsModule,
     TicketsModule,
     WishlistModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

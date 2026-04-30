@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type {
   PaymentMethodCode as PaymentMethodCodeType,
   PaymentTransactionStatus as PaymentTransactionStatusType,
-} from '../../node_modules/.prisma/client';
+  Prisma,
+} from '@prisma/client';
 
 import {
   OrderPaymentStatus,
@@ -67,7 +68,9 @@ const adminPaymentInclude = {
   },
 } as const;
 
-type PaymentWithRelations = any;
+type PaymentWithRelations = Prisma.PaymentTransactionGetPayload<{
+  include: typeof adminPaymentInclude;
+}>;
 
 @Injectable()
 export class PaymentsService {
@@ -86,7 +89,7 @@ export class PaymentsService {
       },
     });
 
-    return methods.map((method: any) => ({
+    return methods.map((method) => ({
       id: method.id,
       code: method.code,
       name: method.name,
@@ -133,7 +136,7 @@ export class PaymentsService {
       );
     }
 
-    const payment = await this.prisma.$transaction(async (tx: any) => {
+    const payment = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const nextStatus =
         paymentMethod.code === PaymentMethodCode.COD
           ? PaymentTransactionStatus.APPROVED
@@ -274,7 +277,7 @@ export class PaymentsService {
       },
     });
 
-    return payments.map((payment: any) => this.serializePayment(payment));
+    return payments.map((payment) => this.serializePayment(payment));
   }
 
   async reviewPayment(paymentId: string, adminUserId: string, reviewPaymentDto: ReviewPaymentDto) {
@@ -301,7 +304,7 @@ export class PaymentsService {
       throw new BadRequestException('Bank transfer receipt is required before approval.');
     }
 
-    const updatedPayment = await this.prisma.$transaction(async (tx: any) => {
+    const updatedPayment = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.paymentTransaction.update({
         where: {
           id: payment.id,
