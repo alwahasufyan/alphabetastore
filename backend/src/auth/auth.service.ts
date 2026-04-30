@@ -13,7 +13,7 @@ import {
   RefreshToken,
   Role,
   User,
-} from '../../node_modules/.prisma/client';
+} from '@prisma/client';
 import { UsersService } from '../users/users.service';
 import { AUTH_MESSAGES } from './constants';
 import { LoginDto } from './dto/login.dto';

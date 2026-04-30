@@ -4,11 +4,15 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/nestjs';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
+  private readonly logger = new Logger(HttpExceptionFilter.name);
+
   private getErrorCode(status: number, responseBody: unknown): string {
     if (
       responseBody &&
@@ -63,10 +67,25 @@ export class HttpExceptionFilter implements ExceptionFilter {
         ? exception.getResponse()
         : null;
 
+    const errorMessage = this.getErrorMessage(responseBody);
+
+    // Log server errors with full stack trace; log client errors as warnings
+    if (status >= 500) {
+      Sentry.captureException(exception);
+      this.logger.error(
+        { err: exception, path: request.url, statusCode: status },
+        `[${request.method}] ${request.url} → ${status}: ${errorMessage}`,
+      );
+    } else if (status >= 400) {
+      this.logger.warn(
+        `[${request.method}] ${request.url} → ${status}: ${errorMessage}`,
+      );
+    }
+
     response.status(status).json({
       success: false,
       errorCode: this.getErrorCode(status, responseBody),
-      message: this.getErrorMessage(responseBody),
+      message: errorMessage,
       path: request.url,
       timestamp: new Date().toISOString(),
     });

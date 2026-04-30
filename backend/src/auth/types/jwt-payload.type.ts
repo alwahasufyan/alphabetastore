@@ -1,4 +1,4 @@
-import type { Role } from '../../../node_modules/.prisma/client';
+import type { Role } from '@prisma/client';
 
 export type JwtPayload = {
   sub: string;

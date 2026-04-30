@@ -13,10 +13,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { randomUUID } from 'crypto';
-import { existsSync, mkdirSync } from 'fs';
-import { extname, join } from 'path';
+import { Throttle } from '@nestjs/throttler';
+import { memoryStorage } from 'multer';
+import { extname } from 'path';
 
 import { JwtPayload } from '../auth/types/jwt-payload.type';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -24,34 +23,17 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../common/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Role } from '../prisma/prisma-client';
+import { StorageService } from '../storage/local-storage.service';
 import { CreateOrderPaymentDto } from './dto/create-order-payment.dto';
 import { ReviewPaymentDto } from './dto/review-payment.dto';
 import { PaymentsService } from './payments.service';
 
-const PAYMENT_RECEIPT_UPLOAD_DIR = join(process.cwd(), 'uploads', 'payment-receipts');
 const MAX_RECEIPT_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_RECEIPT_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.pdf', '.webp']);
 
 type PaymentRequest = {
   user?: JwtPayload | null;
 };
-
-function ensurePaymentReceiptUploadDir() {
-  if (!existsSync(PAYMENT_RECEIPT_UPLOAD_DIR)) {
-    mkdirSync(PAYMENT_RECEIPT_UPLOAD_DIR, { recursive: true });
-  }
-}
-
-const paymentReceiptStorage = diskStorage({
-  destination: (_request, _file, callback) => {
-    ensurePaymentReceiptUploadDir();
-    callback(null, PAYMENT_RECEIPT_UPLOAD_DIR);
-  },
-  filename: (_request, file, callback) => {
-    const extension = extname(file.originalname).toLowerCase();
-    callback(null, `${randomUUID()}${extension}`);
-  },
-});
 
 function paymentReceiptFileFilter(
   _request: unknown,
@@ -75,7 +57,10 @@ function paymentReceiptFileFilter(
 
 @Controller()
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Get('payment-methods')
   findActiveMethods() {
@@ -83,6 +68,7 @@ export class PaymentsController {
   }
 
   @Post('payments/orders/:orderId')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @UseGuards(OptionalJwtAuthGuard)
   createOrderPayment(
     @Req() request: PaymentRequest,
@@ -101,25 +87,31 @@ export class PaymentsController {
   }
 
   @Post('payments/:id/receipt')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @UseGuards(OptionalJwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: paymentReceiptStorage,
+      storage: memoryStorage(),
       fileFilter: paymentReceiptFileFilter,
       limits: {
         fileSize: MAX_RECEIPT_FILE_SIZE,
       },
     }),
   )
-  uploadReceipt(
+  async uploadReceipt(
     @Req() request: PaymentRequest,
     @Headers('x-session-id') sessionId: string | undefined,
     @Param('id') id: string,
-    @UploadedFile() file: { filename: string } | undefined,
+    @UploadedFile() file: Express.Multer.File | undefined,
   ) {
     if (!file) {
       throw new BadRequestException('Receipt file is required.');
     }
+
+    const fileUrl = await this.storageService.saveFile(file.buffer, {
+      subdirectory: 'payment-receipts',
+      originalname: file.originalname,
+    });
 
     return this.paymentsService.uploadReceipt(
       {
@@ -127,7 +119,7 @@ export class PaymentsController {
         sessionId: sessionId ?? null,
       },
       id,
-      `/uploads/payment-receipts/${file.filename}`,
+      fileUrl,
     );
   }
 
