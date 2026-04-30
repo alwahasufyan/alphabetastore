@@ -1,3 +1,8 @@
+import { initSentry } from './config/sentry';
+
+// Must be the very first import so Sentry instruments all other modules
+initSentry(process.env.SENTRY_DSN);
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
@@ -28,7 +33,17 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        scriptSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  }));
 
   app.useGlobalPipes(
     new ValidationPipe({

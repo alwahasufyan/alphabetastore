@@ -13,6 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { memoryStorage } from 'multer';
 import { extname } from 'path';
 
@@ -67,6 +68,7 @@ export class PaymentsController {
   }
 
   @Post('payments/orders/:orderId')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @UseGuards(OptionalJwtAuthGuard)
   createOrderPayment(
     @Req() request: PaymentRequest,
@@ -85,6 +87,7 @@ export class PaymentsController {
   }
 
   @Post('payments/:id/receipt')
+  @Throttle({ default: { ttl: 60_000, limit: 10 } })
   @UseGuards(OptionalJwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {

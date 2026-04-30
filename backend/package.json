@@ -38,6 +38,7 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
     "@prisma/client": "^6.7.0",
+    "@sentry/nestjs": "^10.51.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.52.3",
     "cache-manager": "^7.2.8",

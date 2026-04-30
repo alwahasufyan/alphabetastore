@@ -33,6 +33,9 @@ pnpm-debug.log*
 # deployment
 .vercel/
 
+# backups
+backups/
+
 # misc
 .DS_Store
 *.pem

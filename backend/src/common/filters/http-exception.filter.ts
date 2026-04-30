@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/nestjs';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -70,6 +71,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     // Log server errors with full stack trace; log client errors as warnings
     if (status >= 500) {
+      Sentry.captureException(exception);
       this.logger.error(
         { err: exception, path: request.url, statusCode: status },
         `[${request.method}] ${request.url} → ${status}: ${errorMessage}`,
