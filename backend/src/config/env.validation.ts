@@ -14,4 +14,10 @@ export const validationSchema = Joi.object({
   ADMIN_EMAIL: Joi.string().email().required(),
   ADMIN_PASSWORD: Joi.string().min(8).required(),
   CORS_ALLOWED_ORIGINS: Joi.string().default(''),
+  STORAGE_DRIVER: Joi.string().valid('local', 's3').default('local'),
+  S3_BUCKET: Joi.when('STORAGE_DRIVER', { is: 's3', then: Joi.string().required(), otherwise: Joi.string().optional() }),
+  S3_REGION: Joi.when('STORAGE_DRIVER', { is: 's3', then: Joi.string().required(), otherwise: Joi.string().optional() }),
+  S3_ENDPOINT: Joi.string().uri().optional(),
+  S3_PUBLIC_BASE_URL: Joi.string().uri().optional(),
+  REDIS_URL: Joi.string().uri({ scheme: ['redis', 'rediss'] }).optional(),
 });

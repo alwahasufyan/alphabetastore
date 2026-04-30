@@ -1,13 +1,19 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Prisma } from '@prisma/client';
+import type { Cache } from 'cache-manager';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+
+const CATEGORIES_CACHE_KEY = 'categories:all';
+const CATEGORIES_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 const categoryInclude = {
   parent: {
@@ -21,22 +27,35 @@ const categoryInclude = {
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
 
-  findAll() {
-    return this.prisma.category.findMany({
+  async findAll() {
+    const cached = await this.cacheManager.get(CATEGORIES_CACHE_KEY);
+
+    if (cached) {
+      return cached;
+    }
+
+    const categories = await this.prisma.category.findMany({
       include: categoryInclude,
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    await this.cacheManager.set(CATEGORIES_CACHE_KEY, categories, CATEGORIES_CACHE_TTL_MS);
+
+    return categories;
   }
 
   async create(createCategoryDto: CreateCategoryDto) {
     await this.ensureParentExists(createCategoryDto.parentId);
 
     try {
-      return await this.prisma.category.create({
+      const category = await this.prisma.category.create({
         data: {
           name: createCategoryDto.name,
           slug: createCategoryDto.slug,
@@ -45,6 +64,10 @@ export class CategoriesService {
         },
         include: categoryInclude,
       });
+
+      await this.cacheManager.del(CATEGORIES_CACHE_KEY);
+
+      return category;
     } catch (error) {
       this.handleUniqueConstraint(error, 'Category slug already exists.');
       throw error;
@@ -67,7 +90,7 @@ export class CategoriesService {
     await this.ensureParentExists(updateCategoryDto.parentId);
 
     try {
-      return await this.prisma.category.update({
+      const category = await this.prisma.category.update({
         where: { id },
         data: {
           name: updateCategoryDto.name,
@@ -77,6 +100,10 @@ export class CategoriesService {
         },
         include: categoryInclude,
       });
+
+      await this.cacheManager.del(CATEGORIES_CACHE_KEY);
+
+      return category;
     } catch (error) {
       this.handleUniqueConstraint(error, 'Category slug already exists.');
       throw error;
@@ -107,6 +134,8 @@ export class CategoriesService {
     await this.prisma.category.delete({
       where: { id },
     });
+
+    await this.cacheManager.del(CATEGORIES_CACHE_KEY);
 
     return {
       message: 'Category deleted successfully.',

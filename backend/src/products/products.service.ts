@@ -3,12 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { unlink } from 'fs/promises';
 import type { Prisma } from '@prisma/client';
-import { join } from 'path';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { ProductStatus } from '../prisma/prisma-client';
+import { StorageService } from '../storage/local-storage.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FindProductsQueryDto } from './dto/find-products-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -32,9 +31,45 @@ const productInclude = {
   },
 } satisfies Prisma.ProductInclude;
 
+/**
+ * Minimal projection used for list responses.
+ * Omits `description` and `shortDescription` – these are only needed on the
+ * product detail page, fetched via findOneBySlug.
+ */
+const productListSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  price: true,
+  stockQty: true,
+  status: true,
+  createdAt: true,
+  category: {
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      isActive: true,
+    },
+  },
+  images: {
+    orderBy: {
+      sortOrder: 'asc',
+    },
+    select: {
+      id: true,
+      imageUrl: true,
+      sortOrder: true,
+    },
+  },
+} satisfies Prisma.ProductSelect;
+
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   async findAll(query: FindProductsQueryDto = {}) {
     const searchTerm = query.q?.trim() || query.search?.trim();
@@ -125,7 +160,7 @@ export class ProductsService {
     if (!hasPagination) {
       return this.prisma.product.findMany({
         where,
-        include: productInclude,
+        select: productListSelect,
         orderBy: this.buildOrderBy(query.sort),
       });
     }
@@ -145,7 +180,7 @@ export class ProductsService {
     const [items, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
-        include: productInclude,
+        select: productListSelect,
         orderBy: this.buildOrderBy(sort),
         skip: (page - 1) * limit,
         take: limit,
@@ -346,7 +381,7 @@ export class ProductsService {
       },
     });
 
-    await this.removeLocalImageFile(productImage.imageUrl);
+    await this.storageService.deleteFile(productImage.imageUrl);
 
     return this.prisma.product.findUniqueOrThrow({
       where: { id },
@@ -377,7 +412,7 @@ export class ProductsService {
 
     await Promise.all(
       existingProduct.images.map((image: { imageUrl: string }) =>
-        this.removeLocalImageFile(image.imageUrl),
+        this.storageService.deleteFile(image.imageUrl),
       ),
     );
 
@@ -444,22 +479,5 @@ export class ProductsService {
     }
 
     return { createdAt: 'desc' };
-  }
-
-  private async removeLocalImageFile(imageUrl: string) {
-    if (!imageUrl.startsWith('/uploads/')) {
-      return;
-    }
-
-    const segments = imageUrl.replace(/^\//, '').split('/');
-    const filePath = join(process.cwd(), ...segments);
-
-    try {
-      await unlink(filePath);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error;
-      }
-    }
   }
 }
