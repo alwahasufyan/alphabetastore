@@ -1,4 +1,5 @@
 import { IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { PaymentMethodCode } from '../../prisma/prisma-client';
 
 const SUPPORTED_PROFILE_PAYMENT_METHODS = ['COD', 'BANK_TRANSFER'] as const;
 
@@ -15,5 +16,5 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsIn(SUPPORTED_PROFILE_PAYMENT_METHODS)
-  preferredPaymentMethod?: string;
+  preferredPaymentMethod?: PaymentMethodCode;
 }

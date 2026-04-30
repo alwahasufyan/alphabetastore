@@ -11,7 +11,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-alphabeta}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-alphabeta_prod_12345}
       POSTGRES_DB: ${POSTGRES_DB:-alphabeta}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -21,20 +21,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "5434:5432"
     networks:
       - internal
 
   redis:
     image: redis:7-alpine
     restart: always
-    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set} --appendonly yes
+    command: redis-server --requirepass ${REDIS_PASSWORD:-alphabeta_redis_12345} --appendonly yes
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-alphabeta_redis_12345}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "6380:6379"
     networks:
       - internal
 
@@ -47,8 +51,8 @@ services:
       - ./backend/.env.production
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-alphabeta}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-alphabeta}?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      DATABASE_URL: postgresql://${POSTGRES_USER:-alphabeta}:${POSTGRES_PASSWORD:-alphabeta_prod_12345}@db:5432/${POSTGRES_DB:-alphabeta}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-alphabeta_redis_12345}@redis:6379
     depends_on:
       db:
         condition: service_healthy
@@ -56,6 +60,8 @@ services:
         condition: service_healthy
     volumes:
       - uploads_data:/app/uploads
+    ports:
+      - "3001:3001"
     networks:
       - internal
       - external
@@ -71,14 +77,18 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-https://yourdomain.com/api/v1}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3001/api/v1}
         NEXT_PUBLIC_API_URL: http://backend:3001/api/v1
     restart: always
+    env_file:
+      - ./frontend/.env.production
     environment:
       NODE_ENV: production
     depends_on:
       backend:
         condition: service_healthy
+    ports:
+      - "3000:3000"
     networks:
       - internal
       - external
@@ -94,7 +104,7 @@ services:
     image: postgres:16-alpine
     restart: always
     environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-alphabeta_prod_12345}
       POSTGRES_USER: ${POSTGRES_USER:-alphabeta}
       POSTGRES_DB: ${POSTGRES_DB:-alphabeta}
       POSTGRES_HOST: db
