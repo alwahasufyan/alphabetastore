@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 
 import { OrderPaymentStatus, OrderStatus, PaymentMethodCode } from '../prisma/prisma-client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../queue/notification.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { FindOrdersQueryDto } from './dto/find-orders-query.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -18,6 +20,7 @@ const orderInclude = {
       name: true,
       email: true,
       phone: true,
+      role: true,
     },
   },
   items: {
@@ -100,15 +103,16 @@ const cartForOrderInclude = {
       product: {
         select: {
           name: true,
+          stockQty: true,
         },
       },
     },
   },
 } as const;
 
-type CartForOrder = any;
+type CartForOrder = Prisma.CartGetPayload<{ include: typeof cartForOrderInclude }>;
 
-type OrderWithRelations = any;
+type OrderWithRelations = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 const ORDER_STATUS_VALUES = Object.values(OrderStatus) as Array<
   (typeof OrderStatus)[keyof typeof OrderStatus]
 >;
@@ -121,13 +125,24 @@ function isUuidLike(value: string) {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async createOrder(identity: OrderIdentity, createOrderDto: CreateOrderDto) {
     const cart = await this.findCartWithItems(identity);
 
     if (!cart || cart.items.length === 0) {
       throw new BadRequestException('Cart is empty.');
+    }
+
+    for (const item of cart.items) {
+      if (item.product.stockQty < item.quantity) {
+        throw new BadRequestException(
+          `"${item.product.name}" has insufficient stock (available: ${item.product.stockQty}).`,
+        );
+      }
     }
 
     const savedAddress = await this.resolveSavedAddress(identity.userId, createOrderDto.addressId);
@@ -178,6 +193,14 @@ export class OrdersService {
         },
         include: orderInclude,
       }),
+      ...cart.items.map((item: CartForOrder['items'][number]) =>
+        this.prisma.product.update({
+          where: { id: item.productId },
+          data: {
+            stockQty: { decrement: item.quantity },
+          },
+        }),
+      ),
       this.prisma.cartItem.deleteMany({
         where: {
           cartId: cart.id,
@@ -190,6 +213,12 @@ export class OrdersService {
         },
       }),
     ]);
+
+    void this.notificationService.notifyOrderPlaced({
+      orderId: order.id,
+      userId: identity.userId,
+      totalAmount: Number(order.totalAmount),
+    });
 
     return this.serializeOrder(order);
   }
@@ -257,6 +286,12 @@ export class OrdersService {
     ]);
 
     const updatedOrder = transactionResults[2];
+
+    void this.notificationService.notifyOrderStatusChanged({
+      orderId: updatedOrder.id,
+      userId: updatedOrder.userId,
+      status: updatedOrder.status,
+    });
 
     return this.serializeOrder(updatedOrder);
   }

@@ -13,41 +13,22 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { existsSync, mkdirSync } from 'fs';
-import { diskStorage } from 'multer';
-import { randomUUID } from 'crypto';
-import { extname, join } from 'path';
+import { memoryStorage } from 'multer';
+import { extname } from 'path';
 
 import { Roles } from '../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Role } from '../prisma/prisma-client';
+import { StorageService } from '../storage/local-storage.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FindProductsQueryDto } from './dto/find-products-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
 
-const PRODUCT_UPLOAD_DIR = join(process.cwd(), 'uploads', 'products');
 const MAX_PRODUCT_IMAGE_FILES = 10;
 const MAX_PRODUCT_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
-
-function ensureProductUploadDir() {
-  if (!existsSync(PRODUCT_UPLOAD_DIR)) {
-    mkdirSync(PRODUCT_UPLOAD_DIR, { recursive: true });
-  }
-}
-
-const productImageStorage = diskStorage({
-  destination: (_request, _file, callback) => {
-    ensureProductUploadDir();
-    callback(null, PRODUCT_UPLOAD_DIR);
-  },
-  filename: (_request, file, callback) => {
-    const extension = extname(file.originalname).toLowerCase();
-    callback(null, `${randomUUID()}${extension}`);
-  },
-});
 
 function productImageFileFilter(
   _request: unknown,
@@ -71,7 +52,10 @@ function productImageFileFilter(
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Get()
   findAll(@Query() query: FindProductsQueryDto) {
@@ -95,25 +79,31 @@ export class ProductsController {
   @Post(':id/images')
   @UseInterceptors(
     FilesInterceptor('files', MAX_PRODUCT_IMAGE_FILES, {
-      storage: productImageStorage,
+      storage: memoryStorage(),
       fileFilter: productImageFileFilter,
       limits: {
         fileSize: MAX_PRODUCT_IMAGE_SIZE,
       },
     }),
   )
-  uploadImages(
+  async uploadImages(
     @Param('id') id: string,
-    @UploadedFiles() files: Array<{ filename: string }> | undefined,
+    @UploadedFiles() files: Array<Express.Multer.File> | undefined,
   ) {
     if (!files?.length) {
       throw new BadRequestException('At least one image file is required.');
     }
 
-    return this.productsService.addImages(
-      id,
-      files.map((file) => `/uploads/products/${file.filename}`),
+    const imageUrls = await Promise.all(
+      files.map((file) =>
+        this.storageService.saveFile(file.buffer, {
+          subdirectory: 'products',
+          originalname: file.originalname,
+        }),
+      ),
     );
+
+    return this.productsService.addImages(id, imageUrls);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

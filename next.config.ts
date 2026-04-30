@@ -49,6 +49,7 @@ const staticRemotePatterns: RemotePattern[] = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: staticRemotePatterns.concat(backendUploadsPattern ? [backendUploadsPattern] : [])

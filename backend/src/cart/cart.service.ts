@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import type { Prisma } from '../../node_modules/.prisma/client';
+import type { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
@@ -60,11 +60,17 @@ export class CartService {
       select: {
         id: true,
         price: true,
+        stockQty: true,
+        status: true,
       },
     });
 
     if (!product) {
       throw new NotFoundException('Product not found.');
+    }
+
+    if (product.status !== 'ACTIVE') {
+      throw new BadRequestException('Product is not available.');
     }
 
     const existingItem = await this.prisma.cartItem.findUnique({
@@ -80,11 +86,19 @@ export class CartService {
       },
     });
 
+    const nextQuantity = (existingItem?.quantity ?? 0) + addCartItemDto.quantity;
+
+    if (nextQuantity > product.stockQty) {
+      throw new BadRequestException(
+        `Only ${product.stockQty} unit(s) available in stock.`,
+      );
+    }
+
     if (existingItem) {
       await this.prisma.cartItem.update({
         where: { id: existingItem.id },
         data: {
-          quantity: existingItem.quantity + addCartItemDto.quantity,
+          quantity: nextQuantity,
         },
       });
     } else {

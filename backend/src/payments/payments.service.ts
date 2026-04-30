@@ -2,7 +2,8 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type {
   PaymentMethodCode as PaymentMethodCodeType,
   PaymentTransactionStatus as PaymentTransactionStatusType,
-} from '../../node_modules/.prisma/client';
+  Prisma,
+} from '@prisma/client';
 
 import {
   OrderPaymentStatus,
@@ -12,6 +13,7 @@ import {
   ReceiptReviewStatus,
 } from '../prisma/prisma-client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationService } from '../queue/notification.service';
 import { CreateOrderPaymentDto } from './dto/create-order-payment.dto';
 import { ReviewPaymentDto } from './dto/review-payment.dto';
 
@@ -26,6 +28,7 @@ const adminPaymentInclude = {
   order: {
     select: {
       id: true,
+      userId: true,
       fullName: true,
       phone: true,
       city: true,
@@ -67,11 +70,16 @@ const adminPaymentInclude = {
   },
 } as const;
 
-type PaymentWithRelations = any;
+type PaymentWithRelations = Prisma.PaymentTransactionGetPayload<{
+  include: typeof adminPaymentInclude;
+}>;
 
 @Injectable()
 export class PaymentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   async findActiveMethods() {
     const methods = await this.prisma.paymentMethod.findMany({
@@ -86,7 +94,7 @@ export class PaymentsService {
       },
     });
 
-    return methods.map((method: any) => ({
+    return methods.map((method) => ({
       id: method.id,
       code: method.code,
       name: method.name,
@@ -133,7 +141,7 @@ export class PaymentsService {
       );
     }
 
-    const payment = await this.prisma.$transaction(async (tx: any) => {
+    const payment = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const nextStatus =
         paymentMethod.code === PaymentMethodCode.COD
           ? PaymentTransactionStatus.APPROVED
@@ -187,6 +195,13 @@ export class PaymentsService {
         },
         include: adminPaymentInclude,
       });
+    });
+
+    void this.notificationService.notifyPaymentReceived({
+      orderId,
+      paymentId: payment.id,
+      userId: identity.userId,
+      amount: Number(payment.amount),
     });
 
     return this.serializePayment(payment);
@@ -274,7 +289,7 @@ export class PaymentsService {
       },
     });
 
-    return payments.map((payment: any) => this.serializePayment(payment));
+    return payments.map((payment) => this.serializePayment(payment));
   }
 
   async reviewPayment(paymentId: string, adminUserId: string, reviewPaymentDto: ReviewPaymentDto) {
@@ -301,7 +316,7 @@ export class PaymentsService {
       throw new BadRequestException('Bank transfer receipt is required before approval.');
     }
 
-    const updatedPayment = await this.prisma.$transaction(async (tx: any) => {
+    const updatedPayment = await this.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.paymentTransaction.update({
         where: {
           id: payment.id,
@@ -378,7 +393,25 @@ export class PaymentsService {
       });
     });
 
-    return this.serializePayment(updatedPayment);
+    const serialized = this.serializePayment(updatedPayment);
+
+    if (reviewPaymentDto.status === PaymentTransactionStatus.APPROVED) {
+      void this.notificationService.notifyPaymentApproved({
+        orderId: payment.order.id,
+        paymentId: payment.id,
+        userId: payment.order.userId ?? null,
+        amount: Number(payment.amount),
+      });
+    } else {
+      void this.notificationService.notifyPaymentRejected({
+        orderId: payment.order.id,
+        paymentId: payment.id,
+        userId: payment.order.userId ?? null,
+        amount: Number(payment.amount),
+      });
+    }
+
+    return serialized;
   }
 
   private async findOrderForIdentity(identity: PaymentIdentity, orderId: string) {
