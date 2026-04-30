@@ -65,12 +65,16 @@ import { WishlistModule } from './wishlist/wishlist.module';
         const redisUrl = configService.get<string>('REDIS_URL');
 
         if (redisUrl) {
-          const { createRedisStore } = await import('cache-manager-redis-yet');
+          const { default: KeyvRedis } = await import('@keyv/redis');
+          const { default: Keyv } = await import('keyv');
 
           return {
-            store: createRedisStore,
-            url: redisUrl,
-            ttl: 60_000,
+            stores: [
+              new Keyv({
+                store: new KeyvRedis(redisUrl),
+                ttl: 60_000,
+              }),
+            ],
           };
         }
 
