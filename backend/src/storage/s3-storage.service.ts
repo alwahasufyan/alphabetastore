@@ -22,6 +22,10 @@ export class S3StorageService extends StorageService implements OnModuleInit {
   }
 
   onModuleInit() {
+    if (this.configService.get<string>('STORAGE_DRIVER') !== 's3') {
+      return;
+    }
+
     this.bucket = this.configService.getOrThrow<string>('S3_BUCKET');
     const region = this.configService.getOrThrow<string>('S3_REGION');
     const endpoint = this.configService.get<string>('S3_ENDPOINT');

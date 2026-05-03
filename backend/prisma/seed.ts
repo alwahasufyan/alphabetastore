@@ -13,27 +13,29 @@ async function main() {
   const bcryptSaltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? 10);
 
   if (!adminEmail || !adminPassword) {
-    throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD must be set before running the seed.');
+    console.warn('[seed] ADMIN_EMAIL/ADMIN_PASSWORD not set — skipping admin user creation.');
+  } else {
+    const passwordHash = await bcrypt.hash(adminPassword, bcryptSaltRounds);
+
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {
+        name: adminName,
+        passwordHash,
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+      },
+      create: {
+        name: adminName,
+        email: adminEmail,
+        passwordHash,
+        role: Role.ADMIN,
+        status: UserStatus.ACTIVE,
+      },
+    });
+
+    console.log(`[seed] Admin user upserted: ${adminEmail}`);
   }
-
-  const passwordHash = await bcrypt.hash(adminPassword, bcryptSaltRounds);
-
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: {
-      name: adminName,
-      passwordHash,
-      role: Role.ADMIN,
-      status: UserStatus.ACTIVE,
-    },
-    create: {
-      name: adminName,
-      email: adminEmail,
-      passwordHash,
-      role: Role.ADMIN,
-      status: UserStatus.ACTIVE,
-    },
-  });
 
   const paymentMethods = [
     {

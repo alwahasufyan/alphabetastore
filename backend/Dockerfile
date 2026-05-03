@@ -1,41 +1,61 @@
-# ── Stage 1: Install all deps and build ─────────────────────────────────────
+# ── Stage 1: Build ───────────────────────────────────────────────
 FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
+# 🔥 Required for Prisma
+RUN apt-get update -y && apt-get install -y openssl
+
+# Install dependencies
 COPY package*.json ./
+COPY prisma ./prisma
 RUN npm ci
 
+# Copy source
 COPY . .
 
+# Generate Prisma client + build app
 RUN npm run prisma:generate && npm run build
 
-# ── Stage 2: Production image ────────────────────────────────────────────────
+
+# ── Stage 2: Production ──────────────────────────────────────────
 FROM node:20-bookworm-slim AS runner
 
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install only production deps
-COPY package*.json ./
-RUN npm ci --omit=dev
+# Required for Prisma query engine (must match builder's openssl version)
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy compiled output + generated Prisma client
+# 🔥 IMPORTANT: do NOT run npm ci again
+# copy node_modules from builder (includes Prisma client)
+COPY --from=builder /app/node_modules ./node_modules
+
+# copy built app
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# copy prisma (for migrations if needed)
 COPY prisma ./prisma
 
-# Non-root user for security
+# ensure uploads dir exists
+RUN mkdir -p /app/uploads
+
+# non-root user
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nestjs && \
-    mkdir -p /app/uploads && chown -R nestjs:nodejs /app
+    chown -R nestjs:nodejs /app
+
+# entrypoint
+COPY --chown=nestjs:nodejs docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 USER nestjs
 
 EXPOSE 3001
 
+# 🔥 Healthcheck without wget (Node-based)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD wget -qO- http://localhost:3001/health || exit 1
+  CMD node -e "require('http').get('http://localhost:3001/health', res => process.exit(res.statusCode===200?0:1)).on('error', () => process.exit(1))"
 
-CMD ["sh", "-c", "node node_modules/.bin/prisma migrate deploy && node dist/src/main.js"]
+CMD ["/app/docker-entrypoint.sh"]

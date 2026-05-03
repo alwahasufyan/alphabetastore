@@ -50,7 +50,8 @@ async function main() {
   const bcryptSaltRounds = Number(process.env.BCRYPT_SALT_ROUNDS ?? 10);
 
   if (!email || !password) {
-    throw new Error('Provide admin credentials using --email and --password, or set ADMIN_EMAIL/ADMIN_PASSWORD in .env');
+    console.warn('[create-admin] No credentials provided (set ADMIN_EMAIL/ADMIN_PASSWORD or use --email/--password). Skipping.');
+    return;
   }
 
   if (password.length < 8) {
