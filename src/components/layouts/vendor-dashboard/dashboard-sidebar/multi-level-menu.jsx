@@ -23,7 +23,7 @@ import { ListLabel, BadgeValue, StyledText, BulletIcon, ExternalLink, NavItemBut
 
 const ARABIC_LABELS = {
   Admin: "الإدارة",
-  Vendor: "البائع",
+  Settings: "الإعدادات",
   Dashboard: "لوحة التحكم",
   Products: "المنتجات",
   "Product List": "قائمة المنتجات",

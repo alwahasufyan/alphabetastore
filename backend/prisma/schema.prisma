@@ -138,6 +138,9 @@ model Category {
   slug      String      @unique @db.VarChar(160)
   parentId  String?     @map("parent_id") @db.Uuid
   isActive  Boolean     @default(true) @map("is_active")
+  isVisible Boolean     @default(true) @map("is_visible")
+  sortOrder Int         @default(0) @map("sort_order")
+  icon      String?     @db.VarChar(120)
   createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   parent    Category?   @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
   children  Category[]  @relation("CategoryTree")
@@ -145,6 +148,8 @@ model Category {
 
   @@index([parentId])
   @@index([isActive])
+  @@index([isVisible])
+  @@index([sortOrder])
   @@map("categories")
 }
 
@@ -158,6 +163,9 @@ model Product {
   price            Decimal        @db.Decimal(10, 2)
   stockQty         Int            @map("stock_qty")
   status           ProductStatus  @default(ACTIVE)
+  brand            String?        @db.VarChar(120)
+  sku              String?        @unique @db.VarChar(120)
+  specs            Json?          @db.JsonB
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
   cartItems        CartItem[]
   orderItems       OrderItem[]
@@ -167,6 +175,8 @@ model Product {
 
   @@index([categoryId])
   @@index([status])
+  @@index([brand])
+  @@index([sku])
   @@map("products")
 }
 

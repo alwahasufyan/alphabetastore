@@ -53,6 +53,31 @@ const nextConfig: NextConfig = {
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: staticRemotePatterns.concat(backendUploadsPattern ? [backendUploadsPattern] : [])
+  },
+  async headers() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type,Authorization,X-Cart-Session-Id" },
+          { key: "Access-Control-Allow-Credentials", value: "true" }
+        ]
+      }
+    ];
+  },
+  async rewrites() {
+    const internalApiUrl =
+      process.env.INTERNAL_API_BASE_URL?.trim() ||
+      process.env.NEXT_PUBLIC_API_BASE_URL?.trim() ||
+      "http://localhost:3001/api/v1";
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${internalApiUrl}/:path*`
+      }
+    ];
   }
 };
 

@@ -32,6 +32,7 @@ const THEME_LABELS = {
 
 const validationSchema = yup.object().shape({
   site_name: yup.string().required("site name is required"),
+  site_logo_url: yup.string().url("Must be a valid URL").optional().nullable(),
   theme: yup.string().oneOf(AVAILABLE_THEME_KEYS).required("theme is required"),
   default_language: yup.string().oneOf(["ar", "en"]).required("default language is required"),
   default_currency: yup.string().oneOf(["LYD", "USD"]).required("default currency is required"),
@@ -50,6 +51,7 @@ export default function GeneralForm() {
 
   const initialValues = {
     site_name: "",
+    site_logo_url: "",
     theme: "default",
     default_language: "ar",
     default_currency: "LYD",
@@ -77,6 +79,7 @@ export default function GeneralForm() {
         const response = await apiGet("/settings");
         reset({
           site_name: String(response?.site_name || ""),
+          site_logo_url: String(response?.site_logo_url || ""),
           theme: String(response?.theme || "default"),
           default_language: response?.default_language === "en" ? "en" : "ar",
           default_currency: String(response?.default_currency || "LYD").toUpperCase() === "USD" ? "USD" : "LYD",
@@ -99,6 +102,9 @@ export default function GeneralForm() {
     const entries = [{
       key: "site_name",
       value: values.site_name
+    }, {
+      key: "site_logo_url",
+      value: values.site_logo_url || ""
     }, {
       key: "theme",
       value: values.theme
@@ -127,6 +133,7 @@ export default function GeneralForm() {
 
       updateSettings({
         site_name: values.site_name,
+        site_logo_url: values.site_logo_url || "",
         theme: values.theme,
         default_language: values.default_language,
         direction: values.default_language === "ar" ? "rtl" : "ltr",
@@ -158,6 +165,10 @@ export default function GeneralForm() {
         xs: 12
       }}>
           <TextField fullWidth color="info" size="medium" name="site_name" label="Site Name" />
+        </Grid>
+
+        <Grid size={12}>
+          <TextField fullWidth color="info" size="medium" name="site_logo_url" label="Logo URL (optional)" placeholder="https://example.com/logo.png" />
         </Grid>
 
         <Grid size={{

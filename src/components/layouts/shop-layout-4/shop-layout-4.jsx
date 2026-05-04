@@ -66,7 +66,7 @@ export default function ShopLayout4({
         <MobileMenu navigation={header.navigation} />
       </MobileHeader.Left>
 
-      <MobileHeader.Logo logoUrl={mobileNavigation.logo} />
+      <MobileHeader.Logo logoUrl={mobileNavigation.logo} siteName={mobileNavigation.siteName} />
 
       <MobileHeader.Right>
         <HeaderSearch>
@@ -90,7 +90,7 @@ export default function ShopLayout4({
       <Sticky fixedOn={0} onSticky={toggleIsFixed} scrollDistance={150}>
         <Header mobileHeader={MOBILE_VERSION_HEADER}>
           <Header.Left>
-            <Header.Logo url={header.logo} />
+            <Header.Logo url={header.logo} siteName={header.siteName} />
 
             {isFixed && <Header.CategoryDropdown>
               <CategoryList />

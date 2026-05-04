@@ -32,10 +32,23 @@ MobileHeader.Left = function ({
     </Box>;
 };
 MobileHeader.Logo = function ({
-  logoUrl
+  logoUrl,
+  siteName
 }) {
-  return <Link href="/">
-      <Image width={60} height={44} src={logoUrl} alt="logo" />
+  if (logoUrl) {
+    return <Link href="/">
+        <Image width={60} height={44} src={logoUrl} alt={siteName || "logo"} />
+      </Link>;
+  }
+  return <Link href="/" style={{ textDecoration: "none" }}>
+      <Box sx={{
+      fontWeight: 700,
+      fontSize: "1rem",
+      color: "primary.main",
+      whiteSpace: "nowrap"
+    }}>
+        {siteName || "Alphabeta Store"}
+      </Box>
     </Link>;
 };
 

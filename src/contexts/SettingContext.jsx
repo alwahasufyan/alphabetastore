@@ -16,6 +16,7 @@ import i18n from "i18n";
 const initialSettings = {
   direction: "rtl",
   site_name: "Alphabeta Store",
+  site_logo_url: "",
   theme: "default",
   primary_color: "#1976d2",
   enable_whatsapp: "true",
@@ -41,6 +42,7 @@ function normalizeSettings(value) {
     default_language: source.default_language === "en" ? "en" : "ar",
     direction: source.direction === "ltr" ? "ltr" : source.default_language === "en" ? "ltr" : "rtl",
     site_name: String(source.site_name || initialSettings.site_name),
+    site_logo_url: String(source.site_logo_url || ""),
     theme: String(source.theme || initialSettings.theme),
     primary_color: String(source.primary_color || initialSettings.primary_color),
     enable_whatsapp: String(source.enable_whatsapp ?? initialSettings.enable_whatsapp),

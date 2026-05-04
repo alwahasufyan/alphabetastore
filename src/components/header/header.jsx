@@ -49,12 +49,25 @@ Header.Left = function ({
 // ==============================================================
 
 Header.Logo = function ({
-  url
+  url,
+  siteName
 }) {
-  return <Link href="/">
-      <LazyImage priority src={url} alt="logo" width={105} height={50} sizes="(max-width: 768px) 80px, 105px" sx={{
-      objectFit: "contain"
-    }} />
+  if (url) {
+    return <Link href="/">
+        <LazyImage priority src={url} alt={siteName || "logo"} width={105} height={50} sizes="(max-width: 768px) 80px, 105px" sx={{
+        objectFit: "contain"
+      }} />
+      </Link>;
+  }
+  return <Link href="/" style={{ textDecoration: "none" }}>
+      <Box sx={{
+      fontWeight: 700,
+      fontSize: "1.25rem",
+      color: "primary.main",
+      whiteSpace: "nowrap"
+    }}>
+        {siteName || "Alphabeta Store"}
+      </Box>
     </Link>;
 };
 Header.CategoryDropdown = function ({

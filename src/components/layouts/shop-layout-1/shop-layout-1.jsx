@@ -39,7 +39,7 @@ export default function ShopLayout1({
         <MobileMenu navigation={header.navigation} />
       </MobileHeader.Left>
 
-      <MobileHeader.Logo logoUrl={mobileNavigation.logo} />
+      <MobileHeader.Logo logoUrl={mobileNavigation.logo} siteName={mobileNavigation.siteName} />
 
       <MobileHeader.Right>
         <HeaderSearch>
@@ -63,7 +63,7 @@ export default function ShopLayout1({
       <Sticky fixedOn={0} scrollDistance={300}>
         <Header mobileHeader={MOBILE_VERSION_HEADER}>
           <Header.Left>
-            <Header.Logo url={header.logo} />
+            <Header.Logo url={header.logo} siteName={header.siteName} />
           </Header.Left>
 
           <Header.Mid>
@@ -94,7 +94,7 @@ export default function ShopLayout1({
       <Footer1>
         <Footer1.Brand>
           <Link href="/">
-            <Image src={footer.logo} alt="logo" width={105} height={50} />
+            {footer.logo ? <Image src={footer.logo} alt={footer.siteName || "logo"} width={105} height={50} /> : <Typography variant="h6" sx={{ fontWeight: 700, color: "primary.main" }}>{footer.siteName || "Alphabeta Store"}</Typography>}
           </Link>
 
           <Typography variant="body1" sx={{

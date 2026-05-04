@@ -29,42 +29,22 @@ export const navigation = [{
 }, {
   name: "Orders",
   icon: duotone.Order,
-  children: [{
-    name: "Order List",
-    path: "/admin/orders"
-  }, {
-    name: "Order Details",
-    path: "/admin/orders/f0ba538b-c8f3-45ce-b6c1-209cf07ba5f8"
-  }]
+  path: "/admin/orders"
 }, {
   name: "Payments",
   icon: duotone.Refund,
   path: "/admin/payments"
 }, {
+  name: "Customers",
+  icon: duotone.Accounts,
+  path: "/admin/customers"
+}, {
   name: "Support Tickets",
   icon: duotone.ElementHub,
   path: "/admin/tickets"
 }, {
-  name: "Sellers",
-  icon: duotone.Seller,
-  children: [{
-    name: "Seller Package",
-    path: "/admin/seller-package"
-  }]
-}, {
   type: "label",
-  label: "Vendor"
-}, {
-  name: "Payments",
-  icon: duotone.ProjectChart,
-  children: [{
-    name: "Payout Settings",
-    path: "/vendor/payout-settings"
-  }]
-}, {
-  name: "Shop Setting",
-  icon: duotone.SiteSetting,
-  path: "/vendor/shop-settings"
+  label: "Settings"
 }, {
   name: "Account Settings",
   icon: duotone.AccountSetting,

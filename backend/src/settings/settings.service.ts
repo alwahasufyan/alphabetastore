@@ -5,6 +5,7 @@ import { UpdateSystemSettingDto } from './dto/update-system-setting.dto';
 
 const DEFAULT_SETTINGS: Record<string, string> = {
   site_name: 'Alphabeta Store',
+  site_logo_url: '',
   theme: 'default',
   primary_color: '#1976d2',
   enable_whatsapp: 'true',
@@ -51,6 +52,7 @@ export class SettingsService {
     return {
       general: {
         site_name: settings.site_name,
+        site_logo_url: settings.site_logo_url ?? '',
         theme: settings.theme,
         primary_color: settings.primary_color,
         enable_whatsapp: settings.enable_whatsapp,
